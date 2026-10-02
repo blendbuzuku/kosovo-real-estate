@@ -17,7 +17,7 @@ import { Icon } from './icon';
         @if (l.thumbnailUrl) {
           <img [src]="l.thumbnailUrl" [alt]="l.title" loading="lazy" />
         } @else {
-          <div class="thumb-placeholder" aria-hidden="true">
+          <div class="thumb-placeholder" aria-hidden="true" [attr.data-cat]="placeholderKey()">
             <app-icon [name]="icon()" [size]="40" [stroke]="1.4" />
           </div>
         }
@@ -83,6 +83,8 @@ export class ListingCard {
   protected readonly kicker = computed(() => this.catalog.cardKicker(this.listing()));
   protected readonly place = computed(() => placeLabel(this.listing()));
   protected readonly icon = computed(() => this.catalog.category(this.listing().category)?.icon ?? 'sparkles');
+  /** Stays and rentals share their category's look except for the colour cue. */
+  protected readonly placeholderKey = computed(() => (this.listing().dealType === 'RentNightly' ? 'stays' : this.listing().category));
   protected readonly sellerKind = computed(() => {
     const k = this.listing().seller.kind;
     return k ? BUSINESS_KINDS[k] : '';

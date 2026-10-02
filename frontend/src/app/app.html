@@ -1,8 +1,8 @@
 <header class="site-header">
   <div class="container header-inner">
-    <a routerLink="/" class="brand" aria-label="Prona home">
-      <span class="logo" aria-hidden="true">P</span>
-      <span>Prona</span>
+    <a routerLink="/" class="brand" [attr.aria-label]="brand + ' home'">
+      <app-logo />
+      <span>{{ brand }}</span>
     </a>
     <nav class="main-nav" aria-label="Main">
       <a routerLink="/search" [queryParams]="{ vertical: 'property' }" routerLinkActive="active">Property</a>
@@ -12,6 +12,11 @@
     </nav>
     <span class="spacer"></span>
     <div class="header-actions">
+      <button type="button" class="icon-link theme-toggle" (click)="theme.toggle()"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        [title]="theme.theme() === 'dark' ? 'Light mode' : 'Dark mode'">
+        <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" />
+      </button>
       @if (auth.user(); as user) {
         <a class="icon-link" routerLink="/favorites" routerLinkActive="active" aria-label="Favorites" title="Favorites">
           <app-icon name="heart" />
@@ -50,7 +55,7 @@
       } @else {
         <a class="btn ghost small login-link" routerLink="/login">Log in</a>
       }
-      <a class="btn small post-btn" routerLink="/post"><app-icon name="plus" [size]="18" /> <span>Post an ad</span></a>
+      <a class="btn small dark post-btn" routerLink="/post"><app-icon name="plus" [size]="18" /> <span>Post an ad</span></a>
     </div>
   </div>
 </header>
@@ -62,7 +67,7 @@
 <footer class="site-footer">
   <div class="container footer-grid">
     <div>
-      <a routerLink="/" class="brand"><span class="logo" aria-hidden="true">P</span> Prona</a>
+      <a routerLink="/" class="brand"><app-logo [size]="30" /> {{ brand }}</a>
       <p class="muted small">Homes, stays, land, cars and rentals across all 38 municipalities of Kosovo.</p>
     </div>
     <div>
@@ -80,14 +85,14 @@
       <a routerLink="/search" [queryParams]="{ category: 'vans-trucks' }">Vans &amp; trucks</a>
     </div>
     <div>
-      <strong>Prona</strong>
+      <strong>{{ brand }}</strong>
       <a routerLink="/businesses">Businesses</a>
       <a routerLink="/post">Post an ad</a>
       <a routerLink="/register">Create an account</a>
     </div>
   </div>
   <div class="container footer-note muted small">
-    © Prona · Legal status and customs status are declared by the poster. Check documents with a notary before you pay.
+    © {{ year }} {{ brand }} · Legal status and customs status are declared by the poster. Check documents with a notary before you pay.
   </div>
 </footer>
 

@@ -32,8 +32,9 @@ const RAILS: Omit<Rail, 'items'>[] = [
   template: `
     <section class="hero">
       <div class="container">
-        <h1>Everything for sale and rent in Kosovo, <span class="accent">in one place.</span></h1>
-        <p class="lead">Homes, stays, land, cars and rent-a-car from people and businesses across all 38 municipalities.</p>
+        <span class="eyebrow"><span class="dot"></span> {{ liveTotal() }} live ads across Kosovo</span>
+        <h1>Find your next home, car or stay <span class="accent">in Kosovo.</span></h1>
+        <p class="lead">Buy, rent and book from people and businesses in all 38 municipalities, down to the neighbourhood and village.</p>
 
         <div class="quick-search card">
           <div class="qs-tabs" role="tablist" aria-label="What are you looking for?">
@@ -62,6 +63,12 @@ const RAILS: Omit<Rail, 'items'>[] = [
             <button class="btn qs-go" type="submit"><app-icon name="search" [size]="20" /> <span>Search</span></button>
           </form>
         </div>
+        <div class="hero-stats">
+          <span><strong>38</strong> municipalities</span>
+          <span><strong>590+</strong> neighbourhoods and villages</span>
+          <span><strong>{{ businessCount() }}</strong> businesses</span>
+          <span><strong>Free</strong> to post</span>
+        </div>
       </div>
     </section>
 
@@ -72,7 +79,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
         </div>
         <div class="category-tiles">
           @for (t of tiles(); track t.label) {
-            <a class="category-tile" routerLink="/search" [queryParams]="t.params">
+            <a class="category-tile" routerLink="/search" [queryParams]="t.params" [attr.data-cat]="t.key">
               <span class="tile-icon"><app-icon [name]="t.icon" [size]="28" [stroke]="1.6" /></span>
               <strong>{{ t.label }}</strong>
               <span class="muted small">{{ t.count }} {{ t.count === 1 ? 'ad' : 'ads' }}</span>
@@ -122,7 +129,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
         <section class="section">
           <div class="section-head">
             <div>
-              <h2>Businesses on Prona</h2>
+              <h2>Businesses on Tregu</h2>
               <p class="muted small">Agencies, developers, car dealers and rent-a-car companies with their own pages</p>
             </div>
             <a class="see-all" routerLink="/businesses">All businesses <app-icon name="arrowRight" [size]="16" /></a>
@@ -146,7 +153,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
           <h2>Have something to sell or rent?</h2>
           <p class="muted">Post a home, a room for the night, land, a car or your whole rental fleet. It’s free, and takes about three minutes.</p>
         </div>
-        <a class="btn big" [routerLink]="auth.isLoggedIn() ? '/post' : '/register'"><app-icon name="plus" /> Post an ad</a>
+        <a class="btn big" [routerLink]="auth.isLoggedIn() ? '/post' : '/register'"><app-icon name="plus" /> Post an ad, free</a>
       </section>
     </div>
   `,
@@ -163,6 +170,10 @@ export class HomePage {
   protected readonly where = signal<LocationValue>({ municipality: null, place: null });
   protected readonly rails = signal<Rail[]>(RAILS.map((r) => ({ ...r, items: [] })));
   protected readonly businesses = signal<BusinessProfile[]>([]);
+  protected readonly businessCount = signal(0);
+  protected readonly liveTotal = computed(() =>
+    formatNumber(this.catalog.categories().reduce((n, cat) => n + this.catalog.liveCount(cat), 0)),
+  );
 
   protected readonly unit = computed(() => {
     const d = this.intent().criteria.dealType;
@@ -171,9 +182,10 @@ export class HomePage {
 
   /** One tile per category, plus "Stays" and "Rent a car" since those are their own worlds (they overlap the category tiles). */
   protected readonly tiles = computed(() => {
-    const tiles: { label: string; icon: string; count: string | number; params: object }[] = [];
+    const tiles: { key: string; label: string; icon: string; count: string | number; params: object }[] = [];
     for (const cat of this.catalog.categories()) {
       tiles.push({
+        key: cat.key,
         label: cat.name,
         icon: cat.icon,
         count: formatNumber(this.catalog.liveCount(cat)),
@@ -181,9 +193,9 @@ export class HomePage {
       });
     }
     const stays = this.catalog.categories().reduce((n, cat) => n + this.catalog.liveCount(cat, 'RentNightly'), 0);
-    tiles.splice(2, 0, { label: 'Stays', icon: 'bed', count: formatNumber(stays), params: { dealType: 'RentNightly' } });
+    tiles.splice(2, 0, { key: 'stays', label: 'Stays', icon: 'bed', count: formatNumber(stays), params: { dealType: 'RentNightly' } });
     const rentals = this.catalog.categories().reduce((n, cat) => n + this.catalog.liveCount(cat, 'RentDaily'), 0);
-    tiles.push({ label: 'Rent a car', icon: 'carKey', count: formatNumber(rentals), params: { vertical: 'vehicles', dealType: 'RentDaily' } });
+    tiles.push({ key: 'rent-a-car', label: 'Rent a car', icon: 'carKey', count: formatNumber(rentals), params: { vertical: 'vehicles', dealType: 'RentDaily' } });
     return tiles;
   });
 
@@ -193,7 +205,10 @@ export class HomePage {
         this.rails.update((rails) => rails.map((x, j) => (j === i ? { ...x, items: page.items } : x))),
       ),
     );
-    this.api.businesses().subscribe((b) => this.businesses.set(b.slice(0, 8)));
+    this.api.businesses().subscribe((b) => {
+      this.businesses.set(b.slice(0, 8));
+      this.businessCount.set(b.length);
+    });
   }
 
   protected params(c: SearchCriteria) {

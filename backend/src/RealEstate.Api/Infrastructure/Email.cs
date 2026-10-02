@@ -13,7 +13,7 @@ public class EmailOptions
     public int SmtpPort { get; set; } = 587;
     public string? SmtpUser { get; set; }
     public string? SmtpPassword { get; set; }
-    public string From { get; set; } = "Prona <no-reply@example.com>";
+    public string From { get; set; } = "Tregu <no-reply@example.com>";
     /// <summary>Public URL of the web app, used for links in emails.</summary>
     public string AppBaseUrl { get; set; } = "http://localhost:4200";
 }

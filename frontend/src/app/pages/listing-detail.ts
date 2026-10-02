@@ -104,7 +104,7 @@ function isoDate(d: Date) {
               </button>
             }
           } @else {
-            <div class="g-main thumb-placeholder big"><app-icon [name]="category()?.icon ?? 'sparkles'" [size]="64" [stroke]="1.2" /></div>
+            <div class="g-main thumb-placeholder big" [attr.data-cat]="l.dealType === 'RentNightly' ? 'stays' : l.category"><app-icon [name]="category()?.icon ?? 'sparkles'" [size]="64" [stroke]="1.2" /></div>
           }
         </div>
 
@@ -264,10 +264,10 @@ function isoDate(d: Date) {
                 <div>
                   @if (l.owner.businessSlug) {
                     <a [routerLink]="['/businesses', l.owner.businessSlug]"><strong>{{ l.owner.businessName }}</strong></a>
-                    <div class="muted small">{{ l.owner.businessKind | label: kinds }} · on Prona since {{ l.owner.memberSince | date: 'MMM y' }}</div>
+                    <div class="muted small">{{ l.owner.businessKind | label: kinds }} · on Tregu since {{ l.owner.memberSince | date: 'MMM y' }}</div>
                   } @else {
                     <strong>{{ l.owner.displayName }}</strong>
-                    <div class="muted small">Private seller · on Prona since {{ l.owner.memberSince | date: 'MMM y' }}</div>
+                    <div class="muted small">Private seller · on Tregu since {{ l.owner.memberSince | date: 'MMM y' }}</div>
                   }
                 </div>
               </div>
@@ -513,7 +513,7 @@ export class ListingDetailPage {
     const url = location.href;
     const nav = navigator as Navigator & { share?: (d: { title: string; url: string }) => Promise<void> };
     if (nav.share) {
-      nav.share({ title: this.listing()?.title ?? 'Prona', url }).catch(() => {});
+      nav.share({ title: this.listing()?.title ?? 'Tregu', url }).catch(() => {});
     } else {
       navigator.clipboard?.writeText(url).then(() => this.shared.set(true));
     }

@@ -82,7 +82,7 @@ export class BusinessesPage {
               @if (b.municipality) {
                 <app-icon name="pin" [size]="15" /> {{ b.address ? b.address + ', ' : '' }}{{ b.municipality }} ·
               }
-              On Prona since {{ b.memberSince | date: 'MMM y' }} · {{ b.activeListings }} live {{ b.activeListings === 1 ? 'ad' : 'ads' }}
+              On Tregu since {{ b.memberSince | date: 'MMM y' }} · {{ b.activeListings }} live {{ b.activeListings === 1 ? 'ad' : 'ads' }}
             </p>
             @if (b.description) {
               <p class="about">{{ b.description }}</p>

@@ -1,4 +1,4 @@
-# Prona: buy, rent and book anything in Kosovo
+# Tregu: buy, rent and book anything in Kosovo
 
 A classifieds marketplace for Kosovo where people and businesses post homes, stays, land, commercial space, cars, motorcycles and vans, for sale, monthly rent, per-night stays or per-day rental.
 
@@ -20,6 +20,7 @@ Every ad shows what matters before you call: the **legal status** of a property 
 | Posting | A five-step wizard: what, where, details, photos, publish. It suggests a title from the details, saves the draft before photos, and shows a checklist before sending for review. |
 | Trust | Admin review before ads go live, edits to a live ad send it back to review, reporting with takedown, 60-day expiry with reminder and renewal, rate-limited phone reveal. |
 | Alerts | Save any search, including field filters, and get emailed new matches. |
+| Look | Light and dark themes (follows the device, or the switch in the header), one colour per category, and a phone layout with a bottom tab bar. |
 
 ## Stack
 
@@ -112,6 +113,7 @@ node ui.mjs    # ~1,600 checks in Chromium: every page and action as visitor, me
 | ![Car search with filters](docs/screenshots/2-search-cars.png) | ![Stay with booking box](docs/screenshots/3-stay-booking.png) |
 | ![Post an ad wizard](docs/screenshots/4-post-wizard.png) | ![Business page](docs/screenshots/5-business-page.png) |
 | ![Filters on a phone](docs/screenshots/6-mobile-filters.png) | ![Ad on a phone](docs/screenshots/7-mobile-ad.png) |
+| ![Dark theme](docs/screenshots/8-dark-home.png) | ![Dark theme on a phone](docs/screenshots/9-dark-mobile-home.png) |
 
 ## Next steps
 

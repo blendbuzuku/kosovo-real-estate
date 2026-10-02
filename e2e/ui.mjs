@@ -240,6 +240,21 @@ await section('V2 header and footer links', async () => {
   // Logo returns home
   await p.click('.site-header .brand');
   await p.waitForURL(BASE + '/');
+  ok((await p.title()).startsWith('Tregu'), 'home title names the app', await p.title());
+
+  // Theme toggle flips the theme and survives a reload
+  const theme = () => p.evaluate(() => document.documentElement.dataset.theme);
+  const before = await theme();
+  await p.click('.theme-toggle');
+  const after = await theme();
+  ok(after && after !== before, 'theme toggle switches theme', `${before} -> ${after}`);
+  const bg = await p.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  await p.reload();
+  await settle(p);
+  ok((await theme()) === after, 'theme choice survives a reload', await theme());
+  ok((await p.evaluate(() => getComputedStyle(document.body).backgroundColor)) === bg, 'page colours follow the theme', bg);
+  await p.click('.theme-toggle');
+  ok((await theme()) === before, 'theme toggle switches back', await theme());
 });
 
 // =====================================================================================
