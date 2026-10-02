@@ -1241,94 +1241,110 @@
   "lat": 42.5217,
   "lng": 21.1258,
   "places": [
-   {
-    "name": "Qendra",
-    "kind": "neighbourhood"
-   },
-   {
-    "name": "Lagjja e Re",
-    "kind": "neighbourhood"
-   },
-   {
-    "name": "Banullë",
-    "kind": "village"
-   },
-   {
-    "name": "Bujan",
-    "kind": "village"
-   },
-   {
-    "name": "Dobrajë e Madhe",
-    "kind": "village"
-   },
-   {
-    "name": "Gadime e Epërme",
-    "kind": "village"
-   },
-   {
-    "name": "Gadime e Ulët",
-    "kind": "village"
-   },
-   {
-    "name": "Glloboderë",
-    "kind": "village"
-   },
-   {
-    "name": "Grackë e Vjetër",
-    "kind": "village"
-   },
-   {
-    "name": "Janjevë",
-    "kind": "village"
-   },
-   {
-    "name": "Konjuh",
-    "kind": "village"
-   },
-   {
-    "name": "Krojmir",
-    "kind": "village"
-   },
-   {
-    "name": "Llugaxhi",
-    "kind": "village"
-   },
-   {
-    "name": "Magure",
-    "kind": "village"
-   },
-   {
-    "name": "Medvec",
-    "kind": "village"
-   },
-   {
-    "name": "Ribar i Madh",
-    "kind": "village"
-   },
-   {
-    "name": "Rufc i Vjetër",
-    "kind": "village"
-   },
-   {
-    "name": "Shalë",
-    "kind": "village"
-   },
-   {
-    "name": "Sllovi",
-    "kind": "village"
-   },
-   {
-    "name": "Teqë",
-    "kind": "village"
-   },
-   {
-    "name": "Torinë",
-    "kind": "village"
-   },
-   {
-    "name": "Vershec",
-    "kind": "village"
-   }
+    {
+      "name": "Qendra",
+      "kind": "neighbourhood"
+    },
+    {
+      "name": "Lagjja e Re",
+      "kind": "neighbourhood"
+    },
+    {
+      "name": "Banullë",
+      "kind": "village"
+    },
+    {
+      "name": "Bujan",
+      "kind": "village"
+    },
+    {
+      "name": "Dobrajë e Madhe",
+      "kind": "village"
+    },
+    {
+      "name": "Gadime e Epërme",
+      "kind": "village"
+    },
+    {
+      "name": "Gadime e Ulët",
+      "kind": "village"
+    },
+    {
+      "name": "Glloboderë",
+      "kind": "village"
+    },
+    {
+      "name": "Grackë e Vjetër",
+      "kind": "village"
+    },
+    {
+      "name": "Janjevë",
+      "kind": "village"
+    },
+    {
+      "name": "Konjuh",
+      "kind": "village"
+    },
+    {
+      "name": "Krojmir",
+      "kind": "village"
+    },
+    {
+      "name": "Llugaxhi",
+      "kind": "village"
+    },
+    {
+      "name": "Magure",
+      "kind": "village"
+    },
+    {
+      "name": "Medvec",
+      "kind": "village"
+    },
+    {
+      "name": "Ribar i Vogël",
+      "kind": "village"
+    },
+    {
+      "name": "Ribar i Madh",
+      "kind": "village"
+    },
+    {
+      "name": "Hallaq i Vogël",
+      "kind": "village"
+    },
+    {
+      "name": "Hallaq i Madh",
+      "kind": "village"
+    },
+    {
+      "name": "Rufc i Ri",
+      "kind": "village"
+    },
+    {
+      "name": "Rufc i Vjetër",
+      "kind": "village"
+    },
+    {
+      "name": "Shalë",
+      "kind": "village"
+    },
+    {
+      "name": "Sllovi",
+      "kind": "village"
+    },
+    {
+      "name": "Teqë",
+      "kind": "village"
+    },
+    {
+      "name": "Torinë",
+      "kind": "village"
+    },
+    {
+      "name": "Vershec",
+      "kind": "village"
+    }
   ]
  },
  {
