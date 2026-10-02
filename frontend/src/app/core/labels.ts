@@ -1,11 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { BusinessKind, DealType, ListingSort, ListingStatus, ReportReason } from './models';
+import { ApplicationStatus, BusinessKind, DealType, ListingSort, ListingStatus, ReportReason } from './models';
 
 export const DEAL_TYPES: Record<DealType, string> = {
   Sale: 'For sale',
   RentMonthly: 'Monthly rent',
   RentNightly: 'Per night',
   RentDaily: 'Per day',
+  Job: 'Job',
 };
 
 /** What the person wants to do, used on buttons and tabs. */
@@ -14,6 +15,7 @@ export const DEAL_ACTIONS: Record<DealType, string> = {
   RentMonthly: 'Rent monthly',
   RentNightly: 'Stay per night',
   RentDaily: 'Rent per day',
+  Job: 'Find a job',
 };
 
 /** What the poster is doing, used in the post wizard. */
@@ -22,6 +24,7 @@ export const DEAL_POST: Record<DealType, { title: string; text: string }> = {
   RentMonthly: { title: 'Rent out monthly', text: 'Long-term tenants, price per month.' },
   RentNightly: { title: 'Rent per night', text: 'Guests and tourists, price per night.' },
   RentDaily: { title: 'Rent per day', text: 'Rent-a-car style, price per day.' },
+  Job: { title: 'Hire', text: 'A job opening, with the monthly salary.' },
 };
 
 export const DEAL_UNIT: Record<DealType, string> = {
@@ -29,6 +32,7 @@ export const DEAL_UNIT: Record<DealType, string> = {
   RentMonthly: 'month',
   RentNightly: 'night',
   RentDaily: 'day',
+  Job: 'month',
 };
 
 export const BUSINESS_KINDS: Record<BusinessKind, string> = {
@@ -37,6 +41,7 @@ export const BUSINESS_KINDS: Record<BusinessKind, string> = {
   CarDealer: 'Car dealer',
   RentACar: 'Rent a car',
   Shop: 'Shop',
+  Company: 'Company / employer',
   Other: 'Other business',
 };
 
@@ -47,6 +52,12 @@ export const STATUS: Record<ListingStatus, string> = {
   Rejected: 'Needs changes',
   Expired: 'Expired',
   Archived: 'Sold / rented',
+};
+
+export const APPLICATION_STATUS: Record<ApplicationStatus, string> = {
+  New: 'Sent',
+  Shortlisted: 'Shortlisted',
+  Rejected: 'Not selected',
 };
 
 export const SORTS: Record<ListingSort, string> = {
@@ -84,6 +95,7 @@ export function formatEur(n: number): string {
 }
 
 export function formatPrice(price: number, deal: DealType): string {
+  if (deal === 'Job' && !price) return 'Salary on request';
   const amount = eur.format(price);
   const unit = DEAL_UNIT[deal];
   return unit ? `${amount} / ${unit}` : amount;

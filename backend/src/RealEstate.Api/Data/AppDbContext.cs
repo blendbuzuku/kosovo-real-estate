@@ -42,6 +42,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Conversation> Conversations => Set<Conversation>();
     public DbSet<Message> Messages => Set<Message>();
     public DbSet<ListingReport> ListingReports => Set<ListingReport>();
+    public DbSet<JobApplication> JobApplications => Set<JobApplication>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
     {
@@ -149,6 +150,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 booking.Property(x => x.Units).HasColumnName("booking_units");
                 booking.Property(x => x.TotalEur).HasColumnName("booking_total_eur").HasPrecision(12, 2);
             });
+            e.HasOne(m => m.Application).WithMany().HasForeignKey(m => m.ApplicationId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        b.Entity<JobApplication>(e =>
+        {
+            e.HasIndex(a => new { a.ListingId, a.ApplicantId }).IsUnique();
+            e.HasIndex(a => a.ApplicantId);
+            e.Property(a => a.CoverLetter).HasMaxLength(5000);
+            e.Property(a => a.Phone).HasMaxLength(40);
+            e.Property(a => a.CvKey).HasMaxLength(200);
+            e.Property(a => a.CvFileName).HasMaxLength(200);
+            e.Property(a => a.CvContentType).HasMaxLength(100);
+            e.HasOne(a => a.Listing).WithMany().HasForeignKey(a => a.ListingId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(a => a.Applicant).WithMany().HasForeignKey(a => a.ApplicantId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<Conversation>().WithMany().HasForeignKey(a => a.ConversationId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<ListingReport>(e =>

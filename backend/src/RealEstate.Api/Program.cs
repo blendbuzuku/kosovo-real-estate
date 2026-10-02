@@ -69,11 +69,13 @@ if (storage.Provider.Equals("S3", StringComparison.OrdinalIgnoreCase))
         ForcePathStyle = true
     }));
     builder.Services.AddSingleton<IFileStorage, S3FileStorage>();
+    builder.Services.AddSingleton<IPrivateFileStorage, S3PrivateFileStorage>();
 }
 else
 {
     builder.Services.AddSingleton<LocalFileStorage>();
     builder.Services.AddSingleton<IFileStorage>(sp => sp.GetRequiredService<LocalFileStorage>());
+    builder.Services.AddSingleton<IPrivateFileStorage, LocalPrivateFileStorage>();
 }
 builder.Services.AddScoped<PhotoProcessor>();
 
@@ -86,6 +88,7 @@ else
 
 // Background jobs
 builder.Services.AddScoped<ListingMaintenance>();
+builder.Services.AddScoped<RealEstate.Api.Features.Messaging.Inbox>();
 if (config.GetValue("Maintenance:Enabled", true))
     builder.Services.AddHostedService<ListingMaintenanceWorker>();
 

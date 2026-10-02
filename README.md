@@ -1,6 +1,6 @@
 # Tregu: buy, rent and book anything in Kosovo
 
-A classifieds marketplace for Kosovo where people and businesses post homes, stays, land, commercial space, cars, motorcycles and vans, for sale, monthly rent, per-night stays or per-day rental, plus anything else from home: clothes, phones and electronics, furniture, appliances, baby gear, sports equipment, books, tools and more, new or used.
+A classifieds marketplace for Kosovo where people and businesses post homes, stays, land, commercial space, cars, motorcycles and vans, for sale, monthly rent, per-night stays or per-day rental, plus anything else from home: clothes, phones and electronics, furniture, appliances, baby gear, sports equipment, books, tools and more, new or used. Employers post jobs and people apply with a CV.
 
 Every ad shows what matters before you call: the **legal status** of a property (legalization, cadastre certificate *certifikata e pronësisë*, construction permit *leje ndërtimi*) and whether a car is **customs cleared** (*doganuar*). Every municipality, neighbourhood and village is selectable when searching and posting.
 
@@ -16,10 +16,11 @@ Every ad shows what matters before you call: the **legal status** of a property 
 | Search | Shortcuts (buy a home, rent, stays, cars, rent a car, land, commercial), filters built from the category's fields (ranges, "3+" steps, multi-choice chips, yes/no features), removable filter chips, sorting by price, €/m², year or mileage, a map view with price pins and "search this area", radius and bounding-box search on PostGIS. On phones the filters open in a bottom drawer. |
 | Ads | Photo gallery with full-screen viewer, key facts, grouped specs, a legal status panel, location map, similar ads nearby, a sticky contact bar on phones. |
 | Booking requests | Stays and rent-a-car ads take date requests (and guests for stays). The request arrives in the inbox with the dates and the total worked out, and respects minimum nights and maximum guests. |
-| Accounts | One personal account can search, message, book and post. Business accounts (real estate agency, developer, car dealer, rent a car, shop, other) also get a public page with all their ads. |
+| Accounts | One personal account can search, message, book and post. Business accounts (real estate agency, developer, car dealer, rent a car, shop, company, other) also get a public page with all their ads. |
 | Posting | A five-step wizard: what, where, details, photos, publish. It suggests a title from the details, saves the draft before photos, and shows a checklist before sending for review. |
 | Trust | Admin review before ads go live, edits to a live ad send it back to review, reporting with takedown, 60-day expiry with reminder and renewal, rate-limited phone reveal. |
 | Alerts | Save any search, including field filters, and get emailed new matches. |
+| Jobs | Job ads with field, type of work, workplace, experience, education, languages and benefits, and a monthly salary or "salary on request". People apply with a cover letter and a PDF or Word CV (checked by its first bytes, 5 MB max). The application lands in the employer's inbox and on an applicants page where they can download CVs, shortlist or turn people down; applicants follow their status under My applications and get an email when it changes. CVs are kept in private storage (`Storage:PrivateLocalPath` or `Storage:S3PrivateBucket`) and only the employer and the applicant can download them. |
 | Look | Light and dark themes (follows the device, or the switch in the header), one colour per category, and a phone layout with a bottom tab bar. |
 
 ## Stack
@@ -69,6 +70,7 @@ In Development the API migrates the database on startup and seeds demo data:
 | Host (stays) | host@demo.local | Demo1234! |
 | Shop (phones, appliances) | shop@demo.local | Demo1234! |
 | Private seller (goods) | seller@demo.local | Demo1234! |
+| Employer (jobs) | company@demo.local | Demo1234! |
 | Private seller | owner@demo.local | Demo1234! |
 | Buyer | seeker@demo.local | Demo1234! |
 
@@ -88,8 +90,8 @@ The backend tests spin up the real API in memory against a throwaway database pe
 ```bash
 RateLimits__AuthPer10Minutes=1000 RateLimits__PhonePerHour=1000 RateLimits__MessagesPerHour=1000 dotnet run   # in backend/src/RealEstate.Api
 cd e2e && npm install && npx playwright install chromium
-node api.mjs   # ~1,350 checks: every filter of every category against the data, sorting, paging, locations, permissions, lifecycle
-node ui.mjs    # ~2,150 checks in Chromium: every page and action as visitor, member, business and admin, desktop and phone
+node api.mjs   # ~1,460 checks: every filter of every category against the data, sorting, paging, locations, permissions, lifecycle
+node ui.mjs    # ~2,270 checks in Chromium: every page and action as visitor, member, business and admin, desktop and phone
 ```
 
 `ui.mjs` posts one ad of every category and deal type through the wizard, moderates them, messages, books, reports and saves searches, checks that every count shown matches the API, and fails on any console error or unexpected API error. Set `APP_URL`, `API_URL` or `CHROMIUM_PATH` to point it elsewhere; screenshots land in `e2e/screenshots/`.
@@ -101,7 +103,7 @@ node ui.mjs    # ~2,150 checks in Chromium: every page and action as visitor, me
 | `ConnectionStrings:Default` | PostgreSQL connection string |
 | `Jwt:SigningKey` | At least 32 characters; required |
 | `Admin:Email`, `Admin:Password` | Admin account created on startup if missing |
-| `Storage:Provider` | `Local` or `S3`; with S3 also `S3Bucket`, `S3ServiceUrl`, `S3AccessKey`, `S3SecretKey`, `PublicBaseUrl` |
+| `Storage:Provider` | `Local` or `S3`; with S3 also `S3Bucket`, `S3ServiceUrl`, `S3AccessKey`, `S3SecretKey`, `PublicBaseUrl`, and `S3PrivateBucket` (not public) for CVs. Locally, CVs go to `PrivateLocalPath` (default `private-files`), which is never served. |
 | `Email:SmtpHost` (+ `SmtpPort`, `SmtpUser`, `SmtpPassword`, `From`) | Without a host, emails are written to the log |
 | `Email:AppBaseUrl` | Public URL of the web app, used in email links |
 | `Cors:Origins` | Allowed frontend origins |

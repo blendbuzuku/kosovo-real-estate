@@ -481,3 +481,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 src/RealEstate.Api/media/
+src/RealEstate.Api/private-files/

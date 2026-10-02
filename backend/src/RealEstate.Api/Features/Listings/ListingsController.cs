@@ -11,7 +11,8 @@ namespace RealEstate.Api.Features.Listings;
 
 [ApiController]
 [Route("api/listings")]
-public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProcessor photos, TimeProvider clock) : ControllerBase
+public class ListingsController(
+    AppDbContext db, IFileStorage storage, IPrivateFileStorage privateFiles, PhotoProcessor photos, TimeProvider clock) : ControllerBase
 {
     public const int MaxPhotos = 30;
     private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -166,9 +167,12 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         var listing = await FindOwned(id, ct);
         if (listing is null) return NotFound();
         var keys = listing.Photos.SelectMany(p => new[] { p.LargeKey, p.ThumbKey }).ToList();
+        // Applicants' CVs go with the job ad.
+        var cvKeys = await db.JobApplications.Where(a => a.ListingId == id && a.CvKey != null).Select(a => a.CvKey!).ToListAsync(ct);
         db.Listings.Remove(listing);
         await db.SaveChangesAsync(ct);
         foreach (var key in keys) await storage.DeleteAsync(key, ct);
+        foreach (var key in cvKeys) await privateFiles.DeleteAsync(key, ct);
         return NoContent();
     }
 
@@ -239,7 +243,8 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         var listing = await FindOwned(id, ct);
         var photo = listing?.Photos.FirstOrDefault(p => p.Id == photoId);
         if (photo is null) return NotFound();
-        if (listing!.Photos.Count == 1 && listing.Status is ListingStatus.Active or ListingStatus.PendingReview)
+        if (listing!.Photos.Count == 1 && listing.Status is ListingStatus.Active or ListingStatus.PendingReview &&
+            (Categories.Find(listing.Category)?.PhotosRequired ?? true))
             return Problem("Live ads need at least one photo. Add another before deleting this one.", statusCode: 400);
         db.ListingPhotos.Remove(photo);
         await db.SaveChangesAsync(ct);
@@ -290,6 +295,7 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
             else errors["place"] = [$"'{place}' isn't a neighbourhood or village of {municipality.Name}. Leave it empty and use the address instead."];
         }
         if (r.Lat is null != r.Lng is null) errors["lat"] = ["Give both latitude and longitude, or neither."];
+        if (r.PriceEur <= 0 && r.DealType != DealType.Job) errors["priceEur"] = ["Enter a price."];
 
         var attributes = "{}";
         if (category is not null && !errors.ContainsKey("dealType"))

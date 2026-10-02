@@ -63,6 +63,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Database:SeedDemoData", "false");
         builder.UseSetting("Maintenance:Enabled", "false");
         builder.UseSetting("Storage:LocalPath", _mediaPath);
+        builder.UseSetting("Storage:PrivateLocalPath", _mediaPath + "-private");
         builder.UseSetting("RateLimits:AuthPer10Minutes", "10000");
         builder.UseSetting("RateLimits:PhonePerHour", "10000");
         builder.UseSetting("RateLimits:MessagesPerHour", "10000");
@@ -87,6 +88,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await using var cmd = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{_dbName}\" WITH (FORCE)", conn);
         await cmd.ExecuteNonQueryAsync();
         if (Directory.Exists(_mediaPath)) Directory.Delete(_mediaPath, recursive: true);
+        if (Directory.Exists(_mediaPath + "-private")) Directory.Delete(_mediaPath + "-private", recursive: true);
     }
 
     public async Task<T> WithDb<T>(Func<AppDbContext, Task<T>> action)

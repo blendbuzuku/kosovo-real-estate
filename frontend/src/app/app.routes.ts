@@ -48,6 +48,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/post-wizard').then((m) => m.PostWizardPage),
   },
   {
+    path: 'my-ads/:id/applicants',
+    title: 'Applicants · Tregu',
+    canActivate: [requireAuth()],
+    loadComponent: () => import('./pages/jobs').then((m) => m.ApplicantsPage),
+  },
+  {
+    path: 'my-applications',
+    title: 'My applications · Tregu',
+    canActivate: [requireAuth()],
+    loadComponent: () => import('./pages/jobs').then((m) => m.MyApplicationsPage),
+  },
+  {
     path: 'favorites',
     title: 'Favorites · Tregu',
     canActivate: [requireAuth()],

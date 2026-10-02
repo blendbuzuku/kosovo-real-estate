@@ -7,6 +7,7 @@ const API = process.env.API_URL ?? 'http://localhost:5102/api';
 const OUT = new URL('./screenshots/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
 const PHOTO = new URL('./fixtures/photo.png', import.meta.url).pathname;
+const CV = new URL('./fixtures/cv.pdf', import.meta.url).pathname;
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
 
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
@@ -24,7 +25,7 @@ const ok = (cond, name, extra) => {
   if (cond) res.pass++;
   else res.fail.push(`[${current}] ${name}${extra !== undefined ? ' :: ' + (typeof extra === 'string' ? extra : JSON.stringify(extra)).slice(0, 300) : ''}`);
 };
-const expected4xx = new Set();
+const expected4xx = new Set(['GET /api/listings/:id/applications 404']);
 async function section(name, fn) {
   if (ONLY && !ONLY.some((o) => name.startsWith(o))) return;
   current = name;
@@ -579,7 +580,7 @@ await section('V6 ad pages', async () => {
       ok((await p.locator('.detail-map .leaflet-container').count()) === 1, `${tag}: map`);
       const bookable = deal === 'RentNightly' || deal === 'RentDaily';
       ok(!!(await p.locator('form.booking').count()) === bookable, `${tag}: booking form ${bookable ? 'shown' : 'hidden'}`);
-      ok((await p.locator('.price-block .price').textContent()).includes('€'), `${tag}: price`);
+      ok((await p.locator('.price-block .price').textContent()).match(/€|Salary on request/), `${tag}: price`);
       const crumbs = await p.locator('.crumbs a').count();
       ok(crumbs >= 3, `${tag}: breadcrumbs`);
       await shot(p, `v6-${c.key}-${deal}`, true);
@@ -885,19 +886,20 @@ await section('M1 post every kind of ad', async () => {
       // Details
       await p.waitForSelector('h2:has-text("Tell people about it")');
       if (first) {
-        await p.click('.wizard-foot .btn:has-text("Save and add photos")');
+        await p.click('.wizard-foot .btn:has-text("Save and add")');
         ok((await p.textContent('.wizard-body .error')).includes('Please fill in'), 'wizard lists missing fields');
       }
       await fillDetails(p, c, deal);
-      await p.fill('.fgroup:has(legend:text-is("Price and description")) .with-unit input', deal === 'Sale' ? '45000' : deal === 'RentMonthly' ? '350' : '40');
-      const unitText = await p.textContent('.fgroup:has(legend:text-is("Price and description")) .with-unit .unit');
+      const priceGroup = `.fgroup:has(legend:text-is("${deal === 'Job' ? 'Salary' : 'Price'} and description"))`;
+      await p.fill(`${priceGroup} .with-unit input`, deal === 'Sale' ? '45000' : deal === 'RentMonthly' || deal === 'Job' ? '350' : '40');
+      const unitText = await p.textContent(`${priceGroup} .with-unit .unit`);
       ok(deal === 'Sale' ? unitText.trim() === '€' : unitText.includes('/'), `${tag}: price unit`, unitText);
       if (await p.locator('button:has-text("Use suggestion")').count()) await p.click('button:has-text("Use suggestion")');
       else await p.fill('.title-input input', `Test ${c.name} ${deal}`);
       const title = await p.inputValue('.title-input input');
       ok(title.length >= 5, `${tag}: title suggested`, title);
       await p.fill('textarea[maxlength="5000"]', `Automated test ad for ${c.name}, ${deal}. Everything works and is in good condition.`);
-      await p.click('.wizard-foot .btn:has-text("Save and add photos")');
+      await p.click('.wizard-foot .btn:has-text("Save and add")');
       await p.waitForSelector('h2:has-text("Add photos")');
       ok(/\/my-ads\/[0-9a-f-]+\/edit$/.test(p.url()), `${tag}: URL becomes the edit URL after saving`, p.url());
       const id = p.url().split('/').at(-2);
@@ -1391,6 +1393,74 @@ await section('MOB phone', async () => {
     await p.waitForURL((u) => u.pathname === path);
     ok((await p.locator('.tabbar a.active').count()) === 1, `tab ${label} active`);
   }
+});
+
+// =====================================================================================
+await section('J1 jobs: apply with a CV, employer reviews', async () => {
+  const jobs = await apiJson('/listings?vertical=jobs&pageSize=50');
+  const job = jobs.items.find((j) => j.title === 'Junior .NET developer');
+  ok(!!job, 'seeded job found');
+  const p = await newPage();
+  await p.goto(`${BASE}/search?vertical=jobs`);
+  const n = await countMatchesApi(p, 'jobs search');
+  ok(n >= 10, 'jobs listed', n);
+  await p.goto(`${BASE}/search?vertical=jobs&category=jobs&f.workplace=Remote`);
+  const remote = await countMatchesApi(p, 'remote jobs');
+  ok(remote >= 1, 'remote filter', remote);
+  // A visitor is asked to log in.
+  await p.goto(`${BASE}/listings/${job.id}`);
+  await p.waitForSelector('.contact-card');
+  ok(await p.locator('.contact-card a:has-text("Log in to apply")').count(), 'visitor asked to log in to apply');
+  ok((await p.textContent('.contact-card .price')).includes('month'), 'salary per month shown');
+  // The seeker applies; this job asks for a CV.
+  await login(p, 'seeker@demo.local');
+  await p.goto(`${BASE}/listings/${job.id}`);
+  await p.waitForSelector('.apply-form');
+  const send = p.locator('.apply-form button[type=submit]');
+  await p.fill('.apply-form textarea', 'Hello! I studied computer science in Prishtina and built two ASP.NET Core APIs for my thesis.');
+  ok(await send.isDisabled(), 'CV required before sending');
+  await p.setInputFiles('.apply-form input[type=file]', CV);
+  ok(!(await send.isDisabled()), 'can send once a CV is attached');
+  await send.click();
+  await p.waitForSelector('.applied-box');
+  ok((await p.textContent('.applied-box')).includes('Sent'), 'applied box shows the status');
+  await p.reload();
+  await p.waitForSelector('.applied-box');
+  ok(true, 'applied state survives a reload');
+  await p.click('.applied-box a:has-text("All my applications")');
+  await p.waitForSelector('.application');
+  ok((await p.textContent('.application')).includes('Junior .NET developer'), 'my applications lists the job');
+  const [own] = await Promise.all([p.waitForEvent('download'), p.click('.application button:has-text("cv.pdf")')]);
+  ok(own.suggestedFilename() === 'cv.pdf', 'applicant can download their CV', own.suggestedFilename());
+  await logout(p);
+  // The employer reviews applicants.
+  await login(p, 'company@demo.local');
+  await p.goto(`${BASE}/my-ads`);
+  await p.click('.row-item:has-text("Junior .NET developer") a:has-text("Applicants")');
+  await p.waitForSelector('.applicant');
+  ok((await p.textContent('.applicant')).includes('Drita Berisha'), 'employer sees the applicant');
+  const [cv] = await Promise.all([p.waitForEvent('download'), p.click('.applicant button:has-text("cv.pdf")')]);
+  ok(fs.readFileSync(await cv.path()).subarray(0, 4).toString() === '%PDF', 'employer downloads the CV');
+  await p.click('.applicant button:has-text("Shortlist")');
+  await p.waitForSelector('.applicant .app-status[data-status="Shortlisted"]');
+  ok(true, 'employer shortlists');
+  await p.click('.tabs button:has-text("Shortlisted")');
+  ok((await p.locator('.applicant').count()) === 1, 'shortlisted filter');
+  await p.click('.applicant a:has-text("Message")');
+  await p.waitForSelector('.message-application');
+  ok((await p.textContent('.message-application')).includes('cv.pdf'), 'application shows in the inbox with the CV');
+  await logout(p);
+  // Someone else can't see the applicants or the CV.
+  await login(p, 'seller@demo.local');
+  await p.goto(`${BASE}/my-ads/${job.id}/applicants`);
+  await p.waitForSelector('.error');
+  ok((await p.textContent('.error')).includes('isn’t yours'), 'other users cannot see applicants');
+  await logout(p);
+  // The applicant sees the update.
+  await login(p, 'seeker@demo.local');
+  await p.goto(`${BASE}/my-applications`);
+  await p.waitForSelector('.application .app-status');
+  ok((await p.textContent('.application .app-status')).includes('Shortlisted'), 'applicant sees they were shortlisted');
 });
 
 await browser.close();

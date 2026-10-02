@@ -213,12 +213,13 @@ interface Group {
             }
 
             <fieldset class="fgroup">
-              <legend>Price and description</legend>
+              <legend>{{ isJob() ? 'Salary and description' : 'Price and description' }}</legend>
               <div class="form-grid">
                 <div class="stack">
-                  <span class="flabel">Price *</span>
+                  <span class="flabel">{{ isJob() ? 'Monthly salary' : 'Price *' }}</span>
                   <div class="with-unit">
-                    <input type="number" inputmode="numeric" min="1" [ngModel]="price()" (ngModelChange)="price.set($event)" />
+                    <input type="number" inputmode="numeric" min="1" [ngModel]="price()" (ngModelChange)="price.set($event)"
+                      [placeholder]="isJob() ? 'Agreed at interview' : ''" />
                     <span class="unit">€{{ unit() ? ' / ' + unit() : '' }}</span>
                   </div>
                   @if (pricePerM2(); as ppm) {
@@ -226,7 +227,7 @@ interface Group {
                   }
                 </div>
                 <label class="check self-end">
-                  <input type="checkbox" [ngModel]="negotiable()" (ngModelChange)="negotiable.set($event)" /> Price is negotiable
+                  <input type="checkbox" [ngModel]="negotiable()" (ngModelChange)="negotiable.set($event)" /> {{ isJob() ? 'Salary is negotiable' : 'Price is negotiable' }}
                 </label>
                 <div class="stack wide">
                   <span class="flabel">Title *</span>
@@ -330,7 +331,7 @@ interface Group {
           <span class="spacer"></span>
           @if (step() < 4) {
             <button type="button" class="btn" [disabled]="busy()" (click)="next()">
-              {{ busy() ? 'Saving…' : step() === 2 ? 'Save and add photos' : step() === 3 && !photos().length ? 'Skip for now' : 'Continue' }}
+              {{ busy() ? 'Saving…' : step() === 2 ? (isJob() ? 'Save and add a logo' : 'Save and add photos') : step() === 3 && !photos().length ? 'Skip for now' : 'Continue' }}
               <app-icon name="arrowRight" [size]="18" />
             </button>
           } @else if (canSubmit()) {
@@ -359,6 +360,7 @@ export class PostWizardPage {
     { key: 'property' as const, label: 'Property' },
     { key: 'vehicles' as const, label: 'Vehicles' },
     { key: 'goods' as const, label: 'Goods' },
+    { key: 'jobs' as const, label: 'Jobs' },
   ];
 
   protected readonly step = signal(0);
@@ -386,6 +388,7 @@ export class PostWizardPage {
   protected readonly photos = signal<Photo[]>([]);
 
   protected readonly category = computed(() => this.catalog.category(this.categoryKey()));
+  protected readonly isJob = computed(() => this.deal() === 'Job');
   protected readonly isVehicle = computed(() => this.category()?.vertical === 'vehicles');
   protected readonly unit = computed(() => (this.deal() ? DEAL_UNIT[this.deal()!] : ''));
   protected readonly municipalities = computed(() => [...this.catalog.locations()].sort((a, b) => a.name.localeCompare(b.name, 'sq')));
@@ -426,6 +429,11 @@ export class PostWizardPage {
       const f = cat.fields.find((x) => x.key === key);
       return f ? formatField(f, a[key]) : '';
     };
+    if (cat.vertical === 'jobs') {
+      if (!a['sector']) return '';
+      const kind = a['employmentType'] ? ` (${label('employmentType').toLowerCase()})` : '';
+      return `${label('sector')} job${kind}${at}`;
+    }
     if (cat.vertical === 'goods') {
       const typeField = cat.fields.find((f) => f.type === 'Select' && f.key.endsWith('Type'));
       const kind = typeField && a[typeField.key] !== 'Other' ? label(typeField.key) : '';
@@ -451,7 +459,9 @@ export class PostWizardPage {
   });
 
   protected readonly descriptionHint = computed(() =>
-    this.category()?.vertical === 'goods'
+    this.category()?.vertical === 'jobs'
+      ? 'What the job involves, who you’re looking for, hours, pay and benefits, when it starts…'
+      : this.category()?.vertical === 'goods'
       ? 'What it is, how it’s been used, any marks or faults, what’s included…'
       : this.isVehicle()
       ? 'Condition, service history, what’s included, why you’re selling…'
@@ -468,7 +478,9 @@ export class PostWizardPage {
       { text: 'Location chosen', ok: !!this.municipality(), step: 1 },
       { text: missing.length ? `Missing: ${missing.join(', ')}` : 'All required details filled in', ok: !missing.length, step: 2 },
       { text: 'Price, title and description', ok: this.detailsOk(), step: 2 },
-      { text: this.photos().length ? `${this.photos().length} photo${this.photos().length === 1 ? '' : 's'}` : 'At least one photo', ok: this.photos().length > 0, step: 3 },
+      this.isJob()
+        ? { text: this.photos().length ? `${this.photos().length} photo${this.photos().length === 1 ? '' : 's'}` : 'No photo needed (a logo helps)', ok: true, step: 3 }
+        : { text: this.photos().length ? `${this.photos().length} photo${this.photos().length === 1 ? '' : 's'}` : 'At least one photo', ok: this.photos().length > 0, step: 3 },
     ];
   });
   protected readonly ready = computed(() => this.checks().every((c) => c.ok));
@@ -559,7 +571,10 @@ export class PostWizardPage {
     if (s === 2) {
       const missing = this.missingRequired();
       if (missing.length) return `Please fill in: ${missing.join(', ')}.`;
-      if (!this.detailsOk()) return 'Add a price, a title (5+ characters) and a description (20+ characters).';
+      if (!this.detailsOk())
+        return this.isJob()
+          ? 'Add a title (5+ characters) and a description (20+ characters).'
+          : 'Add a price, a title (5+ characters) and a description (20+ characters).';
     }
     return null;
   }
@@ -574,7 +589,8 @@ export class PostWizardPage {
 
   private detailsOk(): boolean {
     const title = this.title().trim() || this.suggestedTitle();
-    return !!this.price() && this.price()! > 0 && title.length >= 5 && this.description().trim().length >= 20;
+    const priceOk = this.isJob() ? (this.price() ?? 0) >= 0 : !!this.price() && this.price()! > 0;
+    return priceOk && title.length >= 5 && this.description().trim().length >= 20;
   }
 
   // ---------- Step 1 ----------

@@ -29,6 +29,7 @@ interface Rail {
 const RAILS: Omit<Rail, 'items'>[] = [
   { title: 'Property for sale', subtitle: 'Apartments, houses, land and commercial, newest first', criteria: { vertical: 'property', dealType: 'Sale' } },
   { title: 'Fresh finds', subtitle: 'Clothes, phones, furniture and more, new and used', criteria: { vertical: 'goods' } },
+  { title: 'Latest jobs', subtitle: 'Full-time, part-time, seasonal and remote, from businesses across Kosovo', criteria: { vertical: 'jobs' } },
   { title: 'Stays for your next visit', subtitle: 'Book by the night: city flats, old-town houses, mountain chalets', criteria: { dealType: 'RentNightly' } },
   { title: 'Cars for sale', subtitle: 'From private sellers and dealers, customs status shown', criteria: { category: 'cars', dealType: 'Sale' } },
   { title: 'Rent a car', subtitle: 'Pick-up in town or delivered to the airport', criteria: { vertical: 'vehicles', dealType: 'RentDaily' } },
@@ -44,7 +45,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
       <div class="container">
         <span class="eyebrow"><span class="dot"></span> {{ liveTotal() }} live ads across Kosovo</span>
         <h1>Buy, sell and rent anything <span class="accent">in Kosovo.</span></h1>
-        <p class="lead">Homes, cars, stays, clothes, phones, furniture and everything in between, from people and businesses in all 38 municipalities.</p>
+        <p class="lead">Homes, cars, stays, jobs, clothes, phones, furniture and everything in between, from people and businesses in all 38 municipalities.</p>
 
         <div class="quick-search card">
           <div class="qs-tabs" role="tablist" aria-label="What are you looking for?">
@@ -85,7 +86,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
     <div class="container">
       <section class="section">
         <div class="section-head">
-          <h2>Homes, vehicles and stays</h2>
+          <h2>Homes, vehicles, stays and jobs</h2>
         </div>
         <ng-container *ngTemplateOutlet="tileGrid; context: { $implicit: tiles() }" />
       </section>
@@ -176,7 +177,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
       <section class="section post-cta card">
         <div>
           <h2>Have something to sell or rent?</h2>
-          <p class="muted">Post a home, a room for the night, a car, or the things you no longer need. It’s free, and takes about three minutes.</p>
+          <p class="muted">Post a home, a room for the night, a car, a job opening, or the things you no longer need. It’s free, and takes about three minutes.</p>
         </div>
         <a class="btn big" [routerLink]="auth.isLoggedIn() ? '/post' : '/register'"><app-icon name="plus" /> Post an ad, free</a>
       </section>
@@ -208,7 +209,7 @@ export class HomePage {
   /** One tile per category, plus "Stays" and "Rent a car" since those are their own worlds (they overlap the category tiles). */
   protected readonly tiles = computed(() => {
     const tiles: Tile[] = [];
-    for (const cat of this.catalog.categories().filter((c) => c.vertical !== 'goods')) {
+    for (const cat of this.catalog.categories().filter((c) => c.vertical === 'property' || c.vertical === 'vehicles')) {
       tiles.push({
         key: cat.key,
         label: cat.name,
@@ -221,6 +222,9 @@ export class HomePage {
     tiles.splice(2, 0, { key: 'stays', label: 'Stays', icon: 'bed', count: formatNumber(stays), params: { dealType: 'RentNightly' } });
     const rentals = this.catalog.categories().reduce((n, cat) => n + this.catalog.liveCount(cat, 'RentDaily'), 0);
     tiles.push({ key: 'rent-a-car', label: 'Rent a car', icon: 'carKey', count: formatNumber(rentals), params: { vertical: 'vehicles', dealType: 'RentDaily' } });
+    for (const cat of this.catalog.inVertical('jobs')) {
+      tiles.push({ key: cat.key, label: cat.name, icon: cat.icon, count: formatNumber(this.catalog.liveCount(cat)), params: { vertical: 'jobs' } });
+    }
     return tiles;
   });
 

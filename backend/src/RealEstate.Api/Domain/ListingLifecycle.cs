@@ -34,7 +34,7 @@ public partial class Listing
     {
         if (Status is not (ListingStatus.Draft or ListingStatus.Rejected or ListingStatus.Expired))
             throw new DomainException($"A listing that is {Status} can't be submitted.");
-        if (Photos.Count == 0)
+        if (Photos.Count == 0 && (Categories.Find(Category)?.PhotosRequired ?? true))
             throw new DomainException("Add at least one photo before submitting.");
         Status = ListingStatus.PendingReview;
         SubmittedAt = now;

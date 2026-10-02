@@ -131,6 +131,32 @@ public class Message
 
     /// <summary>Set when the message is a booking request for a per-night or per-day rental.</summary>
     public BookingRequest? Booking { get; set; }
+
+    /// <summary>Set when the message is someone applying for a job ad.</summary>
+    public Guid? ApplicationId { get; set; }
+    public JobApplication? Application { get; set; }
+}
+
+/// <summary>
+/// Someone applying for a job ad: a cover letter and, optionally, a CV. The CV is kept in private
+/// storage and only the employer and the applicant can download it.
+/// </summary>
+public class JobApplication
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid ListingId { get; set; }
+    public Listing Listing { get; set; } = null!;
+    public Guid ApplicantId { get; set; }
+    public User Applicant { get; set; } = null!;
+    public Guid ConversationId { get; set; }
+    public required string CoverLetter { get; set; }
+    public string? Phone { get; set; }
+    public string? CvKey { get; set; }
+    public string? CvFileName { get; set; }
+    public string? CvContentType { get; set; }
+    public ApplicationStatus Status { get; set; } = ApplicationStatus.New;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
 
 public class BookingRequest

@@ -98,6 +98,8 @@ export class ListingCard {
         return 'Stay';
       case 'RentDaily':
         return 'Rent per day';
+      case 'Job':
+        return 'Hiring';
       default:
         return '';
     }
@@ -111,6 +113,12 @@ export class ListingCard {
     else if (a['legalization'] === 'InProcess') out.push({ text: 'Legalization in process', tone: 'warn' });
     else if (a['legalization'] === 'NotLegalized') out.push({ text: 'Not legalized', tone: 'bad' });
     if (a['hasCadastreCertificate'] === true) out.push({ text: 'Cadastre cert.', tone: 'ok' });
+    if (this.listing().dealType === 'Job') {
+      if (a['experience'] === 'None') out.push({ text: 'No experience needed', tone: 'ok' });
+      if (a['accommodation'] === true) out.push({ text: 'Accommodation', tone: '' });
+      if (a['training'] === true) out.push({ text: 'Training', tone: '' });
+      return out;
+    }
     if (this.listing().category !== 'cars' && this.listing().dealType !== 'RentDaily') return out;
     if (a['customsCleared'] === true && this.listing().dealType === 'Sale') out.push({ text: 'Customs cleared', tone: 'ok' });
     if (a['unlimitedKm'] === true) out.push({ text: 'Unlimited km', tone: 'ok' });

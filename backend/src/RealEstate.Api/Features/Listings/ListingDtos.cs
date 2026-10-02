@@ -71,7 +71,7 @@ public record ListingUpsertRequest
     public DealType DealType { get; init; }
     [Required, StringLength(140, MinimumLength = 5)] public string Title { get; init; } = "";
     [Required, StringLength(5000, MinimumLength = 20)] public string Description { get; init; } = "";
-    [Range(1, 100_000_000)] public decimal PriceEur { get; init; }
+    [Range(0, 100_000_000)] public decimal PriceEur { get; init; }
     public bool Negotiable { get; init; }
     [Required, MaxLength(64)] public string Municipality { get; init; } = "";
     [MaxLength(80)] public string? Place { get; init; }

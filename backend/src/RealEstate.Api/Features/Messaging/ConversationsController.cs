@@ -22,7 +22,11 @@ public record BookingRequestBody(
 
 public record BookingDto(DateOnly From, DateOnly To, int? Guests, int Units, decimal TotalEur);
 
-public record MessageDto(Guid Id, Guid SenderId, string Body, DateTimeOffset SentAt, bool IsMine, DateTimeOffset? ReadAt, BookingDto? Booking);
+public record MessageApplicationDto(Guid Id, string? CvFileName, ApplicationStatus Status);
+
+public record MessageDto(
+    Guid Id, Guid SenderId, string Body, DateTimeOffset SentAt, bool IsMine, DateTimeOffset? ReadAt, BookingDto? Booking,
+    MessageApplicationDto? Application = null);
 
 public record ConversationDto(
     Guid Id,
@@ -36,8 +40,7 @@ public record ConversationDto(
 
 [ApiController]
 [Authorize]
-public class ConversationsController(
-    AppDbContext db, TimeProvider clock, IEmailSender email, IOptions<EmailOptions> emailOptions) : ControllerBase
+public class ConversationsController(AppDbContext db, TimeProvider clock, Inbox inbox) : ControllerBase
 {
     /// <summary>Message the owner of a listing. Reuses the existing conversation for this listing if there is one.</summary>
     [HttpPost("api/listings/{listingId:guid}/messages")]
@@ -51,9 +54,9 @@ public class ConversationsController(
         if (listing.OwnerId == userId) return Problem("You can't message yourself about your own listing.", statusCode: 400);
 
         var now = clock.GetUtcNow();
-        var conversation = await FindOrStart(listing, userId, now, ct);
-        await AddMessage(conversation, userId, request.Body, now, ct);
-        await NotifyRecipient(listing.Owner, listing.Title, conversation.Id, ct);
+        var conversation = await inbox.FindOrStart(listing, userId, now, ct);
+        await inbox.AddMessage(conversation, userId, request.Body, now, ct);
+        await inbox.NotifyRecipient(listing.Owner, listing.Title, conversation.Id, ct);
         return await Conversations(userId, db.Conversations.Where(c => c.Id == conversation.Id)).FirstAsync(ct);
     }
 
@@ -107,25 +110,14 @@ public class ConversationsController(
         var body = string.IsNullOrWhiteSpace(request.Message) ? summary : $"{summary}\n\n{request.Message.Trim()}";
 
         var now = clock.GetUtcNow();
-        var conversation = await FindOrStart(listing, userId, now, ct);
-        await AddMessage(conversation, userId, body, now, ct, booking);
-        await NotifyRecipient(listing.Owner, listing.Title, conversation.Id, ct);
+        var conversation = await inbox.FindOrStart(listing, userId, now, ct);
+        await inbox.AddMessage(conversation, userId, body, now, ct, booking);
+        await inbox.NotifyRecipient(listing.Owner, listing.Title, conversation.Id, ct);
         return await Conversations(userId, db.Conversations.Where(c => c.Id == conversation.Id)).FirstAsync(ct);
     }
 
     private static decimal? Number(System.Text.Json.JsonElement attributes, string key) =>
         attributes.TryGetProperty(key, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.Number ? v.GetDecimal() : null;
-
-    private async Task<Conversation> FindOrStart(Listing listing, Guid userId, DateTimeOffset now, CancellationToken ct)
-    {
-        var conversation = await db.Conversations.FirstOrDefaultAsync(c => c.ListingId == listing.Id && c.SeekerId == userId, ct);
-        if (conversation is null)
-        {
-            conversation = new Conversation { ListingId = listing.Id, SeekerId = userId, OwnerId = listing.OwnerId, CreatedAt = now };
-            db.Conversations.Add(conversation);
-        }
-        return conversation;
-    }
 
     [HttpGet("api/me/conversations")]
     public async Task<IReadOnlyList<ConversationDto>> List(CancellationToken ct) =>
@@ -154,7 +146,8 @@ public class ConversationsController(
             .Where(m => m.ConversationId == id)
             .OrderBy(m => m.SentAt)
             .Select(m => new MessageDto(m.Id, m.SenderId, m.Body, m.SentAt, m.SenderId == userId, m.ReadAt,
-                m.Booking == null ? null : new BookingDto(m.Booking.From, m.Booking.To, m.Booking.Guests, m.Booking.Units, m.Booking.TotalEur)))
+                m.Booking == null ? null : new BookingDto(m.Booking.From, m.Booking.To, m.Booking.Guests, m.Booking.Units, m.Booking.TotalEur),
+                m.Application == null ? null : new MessageApplicationDto(m.Application.Id, m.Application.CvFileName, m.Application.Status)))
             .ToListAsync(ct);
     }
 
@@ -168,29 +161,10 @@ public class ConversationsController(
             .FirstOrDefaultAsync(c => c.Id == id && (c.SeekerId == userId || c.OwnerId == userId), ct);
         if (conversation is null) return NotFound();
 
-        var message = await AddMessage(conversation, userId, request.Body, clock.GetUtcNow(), ct);
+        var message = await inbox.AddMessage(conversation, userId, request.Body, clock.GetUtcNow(), ct);
         var recipient = conversation.SeekerId == userId ? conversation.Owner : conversation.Seeker;
-        await NotifyRecipient(recipient, conversation.Listing.Title, conversation.Id, ct);
+        await inbox.NotifyRecipient(recipient, conversation.Listing.Title, conversation.Id, ct);
         return new MessageDto(message.Id, message.SenderId, message.Body, message.SentAt, true, null, null);
-    }
-
-    private async Task<Message> AddMessage(
-        Conversation conversation, Guid senderId, string body, DateTimeOffset now, CancellationToken ct, BookingRequest? booking = null)
-    {
-        var message = new Message { ConversationId = conversation.Id, SenderId = senderId, Body = body.Trim(), SentAt = now, Booking = booking };
-        db.Messages.Add(message);
-        conversation.LastMessageAt = now;
-        await db.SaveChangesAsync(ct);
-        return message;
-    }
-
-    private async Task NotifyRecipient(User recipient, string listingTitle, Guid conversationId, CancellationToken ct)
-    {
-        var link = $"{emailOptions.Value.AppBaseUrl.TrimEnd('/')}/messages/{conversationId}";
-        await email.SendAsync(recipient.Email,
-            $"New message about \"{listingTitle}\"",
-            $"<p>You have a new message about <strong>{WebUtility.HtmlEncode(listingTitle)}</strong>.</p>" +
-            $"<p><a href=\"{link}\">Read and reply</a></p>", ct);
     }
 
     private Task<bool> IsParticipant(Guid conversationId, Guid userId, CancellationToken ct) =>

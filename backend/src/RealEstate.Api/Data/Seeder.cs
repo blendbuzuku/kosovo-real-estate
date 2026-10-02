@@ -77,7 +77,13 @@ public static class Seeder
             Description = "Phones, laptops and home appliances, new and certified refurbished, with warranty and delivery across Kosovo."
         });
         var seller = NewUser("seller@demo.local", "Lirie Hoxha", "+383 44 909 110");
-        db.Users.AddRange(member, host, seeker, agency, developer, dealer, rentACar, shop, seller);
+        var company = NewUser("company@demo.local", "Code Valley", "+383 38 600 600", new Business
+        {
+            Name = "Code Valley", Slug = "code-valley", Kind = BusinessKind.Company, Municipality = "Prishtinë",
+            Address = "Rr. Rexhep Luci 7",
+            Description = "Software studio building web and mobile products for clients in Germany, Switzerland and the US. Always hiring juniors."
+        });
+        db.Users.AddRange(member, host, seeker, agency, developer, dealer, rentACar, shop, seller, company);
 
         void Add(User owner, string category, DealType deal, string title, string description, decimal price,
                  string municipality, string? place, object attributes, bool negotiable = false)
@@ -361,6 +367,33 @@ public static class Seeder
 
         Item(member, "other-goods", "Coffee machine for a café, 2 groups", "Two-group espresso machine from a closed café, works.", 650m, "Prishtinë", null,
             new() { ["condition"] = "Good", ["brand"] = "La Spaziale" }, negotiable: true);
+
+        // Jobs.
+        void Job(User owner, string title, string description, decimal salary, string municipality, Dictionary<string, object?> attributes) =>
+            Add(owner, "jobs", DealType.Job, title, description, salary, municipality, null, attributes, negotiable: salary > 0);
+
+        Job(company, "Junior .NET developer", "Join our backend team building APIs with ASP.NET Core and PostgreSQL. Mentoring from senior developers, " +
+            "English used every day with clients. Laptop and paid courses provided.", 900m, "Prishtinë",
+            new() { ["sector"] = "IT & software", ["employmentType"] = "FullTime", ["workplace"] = "Hybrid", ["experience"] = "None", ["education"] = "Bachelor",
+                    ["languages"] = "Albanian, English", ["positions"] = 2, ["training"] = true, ["cvRequired"] = true });
+        Job(company, "Senior Angular developer (remote)", "Lead the frontend of a SaaS product for a Swiss client. Angular, TypeScript, signals, testing.", 2800m, "Prishtinë",
+            new() { ["sector"] = "IT & software", ["employmentType"] = "FullTime", ["workplace"] = "Remote", ["experience"] = "5+", ["languages"] = "English, German", ["cvRequired"] = true });
+        Job(company, "QA tester, internship", "Three-month paid internship testing web and mobile apps. Good chance of a full-time contract afterwards.", 350m, "Prishtinë",
+            new() { ["sector"] = "IT & software", ["employmentType"] = "Internship", ["workplace"] = "OnSite", ["experience"] = "None", ["training"] = true });
+        Job(shop, "Sales assistant in a phone shop", "Help customers choose phones and laptops, handle the till and online orders. Friendly, punctual, good with people.", 450m, "Prishtinë",
+            new() { ["sector"] = "Sales & retail", ["employmentType"] = "FullTime", ["workplace"] = "OnSite", ["experience"] = "None", ["education"] = "HighSchool", ["positions"] = 1 });
+        Job(dealer, "Car mechanic", "Service and repair imported cars in our Ferizaj workshop. Diagnostics experience with VW group cars is a plus.", 700m, "Ferizaj",
+            new() { ["sector"] = "Construction & trades", ["employmentType"] = "FullTime", ["workplace"] = "OnSite", ["experience"] = "3-5", ["transport"] = true, ["meals"] = true });
+        Job(rentACar, "Driver for airport transfers (summer)", "Drive guests between Prishtina airport and hotels from June to September. Category B licence, 3+ years driving.", 550m, "Prishtinë",
+            new() { ["sector"] = "Transport & logistics", ["employmentType"] = "Seasonal", ["workplace"] = "OnSite", ["experience"] = "1-2", ["languages"] = "Albanian, English, German" });
+        Job(agency, "Real estate agent", "Show apartments, meet buyers and sellers, and handle paperwork with the notary. Commission on top of the base salary.", 500m, "Prishtinë",
+            new() { ["sector"] = "Sales & retail", ["employmentType"] = "FullTime", ["workplace"] = "OnSite", ["experience"] = "1-2", ["education"] = "HighSchool" });
+        Job(host, "Cleaner for holiday apartments, part-time", "Clean and prepare four holiday apartments in Prizren between guests, mostly weekends.", 0m, "Prizren",
+            new() { ["sector"] = "Cleaning & household", ["employmentType"] = "PartTime", ["workplace"] = "OnSite", ["experience"] = "None" });
+        Job(member, "Waiter / waitress for a café in Pejë", "Busy café in the centre of Pejë needs staff for the summer season. Meals included, evening shifts.", 400m, "Pejë",
+            new() { ["sector"] = "Hospitality & tourism", ["employmentType"] = "Seasonal", ["workplace"] = "OnSite", ["experience"] = "None", ["meals"] = true, ["company"] = "Kafe Rugova" });
+        Job(developer, "Site engineer for a residential project", "Supervise construction of a 60-apartment building in Prishtinë. Civil engineering degree and site experience required.", 1400m, "Prishtinë",
+            new() { ["sector"] = "Engineering", ["employmentType"] = "FullTime", ["workplace"] = "OnSite", ["experience"] = "3-5", ["education"] = "Bachelor", ["cvRequired"] = true });
 
         await db.SaveChangesAsync();
     }

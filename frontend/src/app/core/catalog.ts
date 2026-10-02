@@ -90,6 +90,14 @@ export const INTENTS: Intent[] = [
     criteria: { vertical: 'goods' },
     hint: 'iPhone, winter coat, sofa, washing machine…',
   },
+  {
+    key: 'jobs',
+    label: 'Find a job',
+    short: 'Jobs',
+    icon: 'briefcase',
+    criteria: { vertical: 'jobs' },
+    hint: 'Developer, waiter, driver, remote…',
+  },
 ];
 
 /** Finds the intent that best describes a search, so the right tab lights up. */
@@ -102,6 +110,7 @@ export function intentFor(c: SearchCriteria): Intent | undefined {
   );
   if (exact) return exact;
   if (c.vertical === 'goods') return INTENTS[7];
+  if (c.vertical === 'jobs' || c.dealType === 'Job' || c.category === 'jobs') return INTENTS[8];
   if (c.dealType === 'RentNightly') return INTENTS[2];
   if (c.dealType === 'RentDaily') return INTENTS[4];
   if (c.category === 'land') return INTENTS[5];
@@ -265,6 +274,12 @@ export class Catalog {
   cardKicker(l: { category: string; attributes: Attributes }): string {
     const cat = this.category(l.category);
     if (!cat) return '';
+    if (cat.vertical === 'jobs') {
+      const sector = cat.fields.find((f) => f.key === 'sector');
+      const company = typeof l.attributes['company'] === 'string' ? l.attributes['company'] : '';
+      const kind = sector ? formatField(sector, l.attributes['sector']) : '';
+      return [kind && kind !== 'Other' ? kind : 'Job', company].filter(Boolean).join(' · ');
+    }
     if (cat.vertical === 'goods') {
       const typeField = this.goodsTypeField(cat);
       const kind = typeField ? formatField(typeField, l.attributes[typeField.key]) : '';

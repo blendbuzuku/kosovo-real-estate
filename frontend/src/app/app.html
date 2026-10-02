@@ -9,6 +9,7 @@
       <a routerLink="/search" [queryParams]="{ dealType: 'RentNightly' }">Stays</a>
       <a routerLink="/search" [queryParams]="{ vertical: 'vehicles' }">Vehicles</a>
       <a routerLink="/search" [queryParams]="{ vertical: 'goods' }">Goods</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'jobs' }">Jobs</a>
       <a routerLink="/businesses" routerLinkActive="active">Businesses</a>
     </nav>
     <span class="spacer"></span>
@@ -40,6 +41,7 @@
               </div>
               <a routerLink="/my-ads" role="menuitem"><app-icon name="list" [size]="18" /> My ads</a>
               <a routerLink="/messages" role="menuitem"><app-icon name="chat" [size]="18" /> Messages</a>
+              <a routerLink="/my-applications" role="menuitem"><app-icon name="briefcase" [size]="18" /> My applications</a>
               <a routerLink="/favorites" role="menuitem"><app-icon name="heart" [size]="18" /> Favorites</a>
               <a routerLink="/saved-searches" role="menuitem"><app-icon name="bell" [size]="18" /> Saved searches</a>
               @if (user.business; as b) {
@@ -69,7 +71,7 @@
   <div class="container footer-grid">
     <div>
       <a routerLink="/" class="brand"><app-logo [size]="30" /> {{ brand }}</a>
-      <p class="muted small">Homes, stays, cars, rentals and everything from home, across all 38 municipalities of Kosovo.</p>
+      <p class="muted small">Homes, stays, cars, jobs and everything from home, across all 38 municipalities of Kosovo.</p>
     </div>
     <div>
       <strong>Property</strong>
@@ -94,6 +96,7 @@
     </div>
     <div>
       <strong>{{ brand }}</strong>
+      <a routerLink="/search" [queryParams]="{ vertical: 'jobs' }">Find a job</a>
       <a routerLink="/businesses">Businesses</a>
       <a routerLink="/post">Post an ad</a>
       <a routerLink="/register">Create an account</a>

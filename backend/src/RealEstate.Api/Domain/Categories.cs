@@ -57,6 +57,9 @@ public record CategoryDef(
     /// <summary>Property categories get €/m², the legal status panel and a map pin by default.</summary>
     public bool IsProperty => Vertical == Categories.Property;
 
+    /// <summary>Most ads need a photo before review; a job ad can go without one.</summary>
+    public bool PhotosRequired { get; init; } = true;
+
     public FieldDef? Field(string key) => Fields.FirstOrDefault(f => f.Key == key);
 }
 
@@ -69,6 +72,7 @@ public static class Categories
     public const string Property = "property";
     public const string Vehicles = "vehicles";
     public const string Goods = "goods";
+    public const string Jobs = "jobs";
 
     private static FieldOption[] Opts(params (string Value, string Label)[] o) => o.Select(x => new FieldOption(x.Value, x.Label)).ToArray();
     private static FieldOption[] Same(params string[] values) => values.Select(v => new FieldOption(v, v)).ToArray();
@@ -350,10 +354,46 @@ public static class Categories
     private static readonly CategoryDef OtherGoods = new("other-goods", "Everything else", Goods, "box", SaleOnly,
         [Condition, Brand, Delivery]);
 
+    // ---------- Jobs ----------
+
+    private static readonly CategoryDef JobAds = new("jobs", "Jobs", Jobs, "briefcase", [DealType.Job],
+    [
+        new("sector", "Field", FieldType.Select)
+        {
+            Required = true, Filter = FilterKind.Multi, Group = "Job",
+            Options = Same("IT & software", "Sales & retail", "Hospitality & tourism", "Construction & trades", "Health & care", "Education",
+                "Finance & accounting", "Office & administration", "Customer service & call centre", "Transport & logistics", "Manufacturing",
+                "Marketing & media", "Engineering", "Beauty & wellness", "Cleaning & household", "Security", "Agriculture", "Other")
+        },
+        new("employmentType", "Type of work", FieldType.Select)
+        {
+            Required = true, Filter = FilterKind.Multi, OnCard = true, Group = "Job",
+            Options = Opts(("FullTime", "Full-time"), ("PartTime", "Part-time"), ("Seasonal", "Temporary / seasonal"), ("Internship", "Internship"), ("Freelance", "Freelance"))
+        },
+        new("workplace", "Workplace", FieldType.Select)
+            { Filter = FilterKind.Multi, OnCard = true, Group = "Job", Options = Opts(("OnSite", "On site"), ("Hybrid", "Hybrid"), ("Remote", "Remote")) },
+        new("experience", "Experience", FieldType.Select)
+        {
+            Filter = FilterKind.Multi, OnCard = true, Group = "Job",
+            Options = Opts(("None", "No experience needed"), ("1-2", "1–2 years"), ("3-5", "3–5 years"), ("5+", "5+ years"))
+        },
+        new("education", "Education", FieldType.Select)
+            { Filter = FilterKind.Multi, Group = "Job", Options = Opts(("None", "None required"), ("HighSchool", "High school"), ("Bachelor", "Bachelor's degree"), ("Master", "Master's or higher")) },
+        new("company", "Company", FieldType.Text) { Filter = FilterKind.Contains, Group = "Job", Help = "Leave empty if you post as a business; your business name is shown." },
+        new("languages", "Languages", FieldType.Text) { Filter = FilterKind.Contains, Group = "Job", Help = "e.g. Albanian, English, German" },
+        new("positions", "Open positions", FieldType.Integer) { Min = 1, Max = 500, Group = "Job" },
+        Feature("transport", "Transport paid") with { Group = "Benefits" },
+        Feature("meals", "Meals provided") with { Group = "Benefits" },
+        Feature("accommodation", "Accommodation provided") with { Group = "Benefits" },
+        Feature("training", "Training provided") with { Group = "Benefits" },
+        Feature("cvRequired", "CV required to apply") with { Group = "Applying", Filter = FilterKind.None }
+    ]) { PhotosRequired = false };
+
     public static readonly IReadOnlyList<CategoryDef> All =
     [
         Apartment, House, Land, Commercial, Cars, Motorcycles, Vans,
-        Clothing, Electronics, Furniture, Appliances, Kids, Sports, Hobbies, Tools, OtherGoods
+        Clothing, Electronics, Furniture, Appliances, Kids, Sports, Hobbies, Tools, OtherGoods,
+        JobAds
     ];
 
     public static CategoryDef? Find(string? key) => All.FirstOrDefault(c => c.Key == key);

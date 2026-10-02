@@ -13,10 +13,14 @@ public class StorageOptions
     /// <summary>"Local" (disk, served by the API under /media) or "S3" (any S3-compatible store: AWS, MinIO, Cloudflare R2).</summary>
     public string Provider { get; set; } = "Local";
     public string LocalPath { get; set; } = "media";
+    /// <summary>Folder for private files such as CVs. Never served directly.</summary>
+    public string PrivateLocalPath { get; set; } = "private-files";
     /// <summary>Base URL photos are served from, e.g. https://cdn.example.com. Defaults to /media for local storage.</summary>
     public string? PublicBaseUrl { get; set; }
 
     public string? S3Bucket { get; set; }
+    /// <summary>Bucket for private files such as CVs; must not allow public reads.</summary>
+    public string? S3PrivateBucket { get; set; }
     public string? S3ServiceUrl { get; set; }
     public string? S3AccessKey { get; set; }
     public string? S3SecretKey { get; set; }

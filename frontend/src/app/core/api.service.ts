@@ -1,13 +1,16 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import {
   AdminStats,
+  Applicant,
+  ApplicationStatus,
   AuthResponse,
   BusinessKind,
   BusinessProfile,
   Category,
   Conversation,
+  JobApplicants,
   ListingDetail,
   ListingStatus,
   ListingSummary,
@@ -15,6 +18,7 @@ import {
   MapPin,
   Message,
   Municipality,
+  MyApplication,
   Paged,
   Photo,
   Problem,
@@ -187,6 +191,41 @@ export class Api {
   requestBooking(listingId: string, body: { checkIn: string; checkOut: string; guests?: number | null; message?: string | null }) {
     return this.http.post<Conversation>(`/api/listings/${listingId}/booking-requests`, body);
   }
+  // ---------- Jobs ----------
+  apply(listingId: string, body: { coverLetter: string; phone?: string | null; cv?: File | null }) {
+    const form = new FormData();
+    form.append('coverLetter', body.coverLetter);
+    if (body.phone) form.append('phone', body.phone);
+    if (body.cv) form.append('cv', body.cv, body.cv.name);
+    return this.http.post<MyApplication>(`/api/listings/${listingId}/applications`, form);
+  }
+  myApplications() {
+    return this.http.get<MyApplication[]>('/api/me/applications');
+  }
+  /** Null when the user hasn't applied (the API answers 204). */
+  myApplicationFor(listingId: string) {
+    return this.http.get<MyApplication | null>(`/api/listings/${listingId}/applications/mine`);
+  }
+  applicants(listingId: string) {
+    return this.http.get<JobApplicants>(`/api/listings/${listingId}/applications`);
+  }
+  setApplicationStatus(id: string, status: ApplicationStatus) {
+    return this.http.put<Applicant>(`/api/applications/${id}/status`, { status });
+  }
+  /** CVs need the login token, so they're fetched as a blob and saved from memory rather than linked. */
+  downloadCv(id: string, fileName: string) {
+    return this.http.get(`/api/applications/${id}/cv`, { responseType: 'blob' }).pipe(
+      tap((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }),
+    );
+  }
+
   reply(conversationId: string, body: string) {
     return this.http.post<Message>(`/api/conversations/${conversationId}/messages`, { body });
   }

@@ -5,8 +5,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
 import { Auth } from '../core/auth';
 import { Catalog, appliesTo, formatField } from '../core/catalog';
-import { BUSINESS_KINDS, DEAL_TYPES, DEAL_UNIT, LabelPipe, PricePipe, REPORT_REASONS, STATUS, entries, formatEur, placeLabel } from '../core/labels';
-import { FieldDef, ListingDetail, ListingSummary, ReportReason } from '../core/models';
+import { APPLICATION_STATUS, BUSINESS_KINDS, DEAL_TYPES, DEAL_UNIT, LabelPipe, PricePipe, REPORT_REASONS, STATUS, entries, formatEur, placeLabel } from '../core/labels';
+import { FieldDef, ListingDetail, ListingSummary, MyApplication, ReportReason } from '../core/models';
 import { Favorites } from '../core/stores';
 import { Icon } from '../shared/icon';
 import { ListingCard } from '../shared/listing-card';
@@ -190,8 +190,45 @@ function isoDate(d: Date) {
               </div>
 
               @if (l.isMine) {
-                <a class="btn block" [routerLink]="['/my-ads', l.id, 'edit']">Edit your ad</a>
+                @if (isJob()) {
+                  <a class="btn block" [routerLink]="['/my-ads', l.id, 'applicants']"><app-icon name="users" [size]="18" /> See applicants</a>
+                }
+                <a class="btn block" [class.ghost]="isJob()" [routerLink]="['/my-ads', l.id, 'edit']">Edit your ad</a>
                 <a class="btn block ghost" routerLink="/my-ads">All my ads</a>
+              } @else if (isJob()) {
+                @if (myApplication(); as a) {
+                  <div class="applied-box">
+                    <strong><app-icon name="check" [size]="18" /> You applied on {{ a.createdAt | date: 'd MMM y' }}</strong>
+                    <span class="small">Status: <span class="app-status" [attr.data-status]="a.status">{{ a.status | label: appStatuses }}</span></span>
+                    <span class="small"><a [routerLink]="['/messages', a.conversationId]">Message the employer</a> · <a routerLink="/my-applications">All my applications</a></span>
+                  </div>
+                } @else if (auth.isLoggedIn()) {
+                  <form class="apply-form" (submit)="$event.preventDefault(); apply()">
+                    <h3>Apply for this job</h3>
+                    <label class="stack">
+                      <span>Why you’re a good fit</span>
+                      <textarea name="cover" rows="6" maxlength="5000" [(ngModel)]="coverLetter"
+                        placeholder="Introduce yourself: your experience, when you can start, anything the employer should know."></textarea>
+                      <span class="muted small">{{ coverLetter.trim().length < 20 ? 'At least 20 characters' : coverLetter.length + ' / 5000' }}</span>
+                    </label>
+                    <label class="stack">
+                      <span>Phone (optional)</span>
+                      <input name="applyPhone" type="tel" maxlength="40" [(ngModel)]="applyPhone" placeholder="+383 44 …" />
+                    </label>
+                    <label class="file-pick">
+                      <app-icon name="download" [size]="18" />
+                      <span>{{ cvRequired() ? 'Attach your CV' : 'Attach your CV (optional)' }}</span>
+                      <span class="name">{{ cvFile()?.name ?? 'PDF or Word, up to 5 MB' }}</span>
+                      <input type="file" name="cv" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        (change)="pickCv($event)" />
+                    </label>
+                    <button class="btn block big" type="submit" [disabled]="!canApply() || sending()">Send application</button>
+                    <p class="muted small center">The employer sees your name, email, message{{ cvFile() ? ' and CV' : '' }}.</p>
+                  </form>
+                } @else {
+                  <a class="btn block big" routerLink="/login" [queryParams]="{ returnUrl: '/listings/' + l.id }">Log in to apply</a>
+                  <p class="muted small center">No account? <a routerLink="/register" [queryParams]="{ returnUrl: '/listings/' + l.id }">Create one for free</a>.</p>
+                }
               } @else if (bookable()) {
                 <form class="booking" (submit)="$event.preventDefault(); requestBooking()">
                   <div class="booking-dates">
@@ -325,7 +362,7 @@ function isoDate(d: Date) {
             <span class="muted small">{{ l.owner.businessName ?? l.owner.displayName }}</span>
           </div>
           <a class="btn" href="#contact" (click)="$event.preventDefault(); scrollToContact()">
-            {{ bookable() ? 'Check dates' : 'Contact' }}
+            {{ isJob() ? (myApplication() ? 'Applied' : 'Apply') : bookable() ? 'Check dates' : 'Contact' }}
           </a>
         </div>
       }
@@ -394,6 +431,20 @@ export class ListingDetailPage {
   protected readonly category = computed(() => this.catalog.category(this.listing()?.category));
   protected readonly isFavorite = computed(() => !!this.listing() && this.favorites.has(this.listing()!.id));
   protected readonly placeText = computed(() => (this.listing() ? placeLabel(this.listing()!) : ''));
+  protected readonly isJob = computed(() => this.listing()?.dealType === 'Job');
+  protected readonly cvRequired = computed(() => this.listing()?.attributes['cvRequired'] === true);
+  protected readonly appStatuses = APPLICATION_STATUS;
+  protected readonly myApplication = signal<MyApplication | null>(null);
+  protected readonly cvFile = signal<File | null>(null);
+  private readonly coverSig = signal('');
+  get coverLetter() {
+    return this.coverSig();
+  }
+  set coverLetter(v: string) {
+    this.coverSig.set(v);
+  }
+  protected applyPhone = '';
+  protected readonly canApply = computed(() => this.coverSig().trim().length >= 20 && (!this.cvRequired() || !!this.cvFile()));
   protected readonly bookable = computed(() => ['RentNightly', 'RentDaily'].includes(this.listing()?.dealType ?? ''));
   protected readonly unitWord = computed(() => DEAL_UNIT[this.listing()?.dealType ?? 'Sale']);
   protected readonly minNights = computed(() => this.num('minNights'));
@@ -409,12 +460,13 @@ export class ListingDetailPage {
     const v = this.category()?.vertical;
     if (v === 'vehicles') return 'vehicle';
     if (v === 'goods') return 'item';
+    if (v === 'jobs') return 'job';
     return this.listing()?.dealType === 'RentNightly' ? 'stay' : 'property';
   });
 
   protected readonly verticalName = computed(() => {
     const v = this.category()?.vertical;
-    return v === 'vehicles' ? 'Vehicles' : v === 'goods' ? 'Goods' : 'Property';
+    return v === 'vehicles' ? 'Vehicles' : v === 'goods' ? 'Goods' : v === 'jobs' ? 'Jobs' : 'Property';
   });
 
   /** The category's on-card fields as big tiles under the photos. */
@@ -448,7 +500,7 @@ export class ListingDetailPage {
       }
     }
     // A short "Type" row for property, where it isn't obvious from the fields.
-    const details = groups.find((g) => g.name === 'Details' || g.name === 'Vehicle' || g.name === 'Item');
+    const details = groups.find((g) => g.name === 'Details' || g.name === 'Vehicle' || g.name === 'Item' || g.name === 'Job');
     details?.rows.unshift({ label: 'Ad type', value: `${cat.name} · ${DEAL_TYPES[l.dealType].toLowerCase()}` });
     return groups.filter((g) => g.rows.length || g.features.length);
   });
@@ -478,10 +530,16 @@ export class ListingDetailPage {
       this.shared.set(false);
       this.fromSig.set('');
       this.toSig.set('');
+      this.myApplication.set(null);
+      this.cvFile.set(null);
+      this.coverSig.set('');
       this.api.listing(id).subscribe({
         next: (l) => {
           this.listing.set(l);
           this.messageText = this.defaultMessage(l);
+          if (l.dealType === 'Job' && this.auth.isLoggedIn() && !l.isMine) {
+            this.api.myApplicationFor(l.id).subscribe({ next: (a) => this.myApplication.set(a), error: () => {} });
+          }
           const max = this.num('maxGuests');
           if (max && this.guests > max) this.guests = max;
         },
@@ -541,6 +599,34 @@ export class ListingDetailPage {
       next: (c) => {
         this.sending.set(false);
         this.sentConversationId.set(c.id);
+      },
+      error: (e) => {
+        this.sending.set(false);
+        this.contactError.set(errorMessage(e));
+      },
+    });
+  }
+
+  protected pickCv(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+    this.contactError.set(null);
+    if (file && file.size > 5 * 1024 * 1024) {
+      this.contactError.set('Your CV must be under 5 MB.');
+      (event.target as HTMLInputElement).value = '';
+      this.cvFile.set(null);
+      return;
+    }
+    this.cvFile.set(file);
+  }
+
+  protected apply() {
+    if (!this.requireLogin() || !this.canApply()) return;
+    this.sending.set(true);
+    this.contactError.set(null);
+    this.api.apply(this.id(), { coverLetter: this.coverLetter.trim(), phone: this.applyPhone.trim() || null, cv: this.cvFile() }).subscribe({
+      next: (a) => {
+        this.sending.set(false);
+        this.myApplication.set(a);
       },
       error: (e) => {
         this.sending.set(false);

@@ -53,6 +53,17 @@ import { Icon } from '../shared/icon';
                     </div>
                   }
                   <p>{{ m.booking ? stripSummary(m.body) : m.body }}</p>
+                  @if (m.application; as app) {
+                    <div class="message-application">
+                      <app-icon name="briefcase" [size]="16" /> Job application
+                      @if (app.cvFileName) {
+                        · <button type="button" (click)="cv(app.id, app.cvFileName)">{{ app.cvFileName }}</button>
+                      }
+                      @if (!m.isMine) {
+                        · <a [routerLink]="['/my-ads', c.listingId, 'applicants']">All applicants</a>
+                      }
+                    </div>
+                  }
                   <span class="small muted">{{ m.sentAt | date: 'd MMM, HH:mm' }}</span>
                 </div>
               }
@@ -118,6 +129,10 @@ export class MessagesPage {
   }
 
   /** The first line of a booking message repeats the card above it. */
+  protected cv(id: string, fileName: string) {
+    this.api.downloadCv(id, fileName).subscribe({ error: (e) => this.error.set(errorMessage(e)) });
+  }
+
   protected stripSummary(body: string) {
     return body.replace(/^Booking request:[^\n]*\n*/, '');
   }

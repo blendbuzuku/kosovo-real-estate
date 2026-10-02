@@ -15,6 +15,7 @@ public enum BusinessKind
     CarDealer,
     RentACar,
     Shop,
+    Company,
     Other
 }
 
@@ -23,7 +24,9 @@ public enum DealType
     Sale,
     RentMonthly,
     RentNightly,
-    RentDaily
+    RentDaily,
+    /// <summary>A job opening; the price is the monthly salary, 0 when it's agreed at interview.</summary>
+    Job
 }
 
 public enum ListingStatus
@@ -61,6 +64,13 @@ public enum ReportReason
     Duplicate,
     Offensive,
     Other
+}
+
+public enum ApplicationStatus
+{
+    New,
+    Shortlisted,
+    Rejected
 }
 
 public enum ReportStatus

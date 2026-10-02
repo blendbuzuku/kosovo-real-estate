@@ -16,8 +16,8 @@ const STRING_KEYS = [
 
 /** Values the API accepts for its enum parameters; anything else in a hand-edited or old URL is dropped. */
 const ALLOWED: Partial<Record<(typeof STRING_KEYS)[number], readonly string[]>> = {
-  vertical: ['property', 'vehicles', 'goods'],
-  dealType: ['Sale', 'RentMonthly', 'RentNightly', 'RentDaily'],
+  vertical: ['property', 'vehicles', 'goods', 'jobs'],
+  dealType: ['Sale', 'RentMonthly', 'RentNightly', 'RentDaily', 'Job'],
   seller: ['Private', 'Business'],
   sort: ['Newest', 'PriceAsc', 'PriceDesc', 'PricePerM2Asc', 'YearDesc', 'MileageAsc'],
 };

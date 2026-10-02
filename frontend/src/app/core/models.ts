@@ -1,12 +1,12 @@
 // Mirrors the API's DTOs (backend/src/RealEstate.Api/Features/**).
 
 export type UserRole = 'Member' | 'Business' | 'Admin';
-export type BusinessKind = 'RealEstateAgency' | 'Developer' | 'CarDealer' | 'RentACar' | 'Shop' | 'Other';
-export type DealType = 'Sale' | 'RentMonthly' | 'RentNightly' | 'RentDaily';
+export type BusinessKind = 'RealEstateAgency' | 'Developer' | 'CarDealer' | 'RentACar' | 'Shop' | 'Company' | 'Other';
+export type DealType = 'Sale' | 'RentMonthly' | 'RentNightly' | 'RentDaily' | 'Job';
 export type ListingStatus = 'Draft' | 'PendingReview' | 'Active' | 'Rejected' | 'Expired' | 'Archived';
 export type SellerType = 'Private' | 'Business';
 export type ListingSort = 'Newest' | 'PriceAsc' | 'PriceDesc' | 'PricePerM2Asc' | 'YearDesc' | 'MileageAsc';
-export type Vertical = 'property' | 'vehicles' | 'goods';
+export type Vertical = 'property' | 'vehicles' | 'goods' | 'jobs';
 export type ReportReason =
   | 'Spam'
   | 'Fraud'
@@ -267,6 +267,45 @@ export interface Message {
   isMine: boolean;
   readAt?: string | null;
   booking?: Booking | null;
+  application?: { id: string; cvFileName?: string | null; status: ApplicationStatus } | null;
+}
+
+// ---------- Jobs ----------
+
+export type ApplicationStatus = 'New' | 'Shortlisted' | 'Rejected';
+
+/** An application as the person who applied sees it. */
+export interface MyApplication {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  employer: string;
+  municipality: string;
+  listingStatus: ListingStatus;
+  status: ApplicationStatus;
+  cvFileName?: string | null;
+  conversationId: string;
+  createdAt: string;
+}
+
+/** An applicant as the employer sees them. */
+export interface Applicant {
+  id: string;
+  applicantId: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  coverLetter: string;
+  cvFileName?: string | null;
+  status: ApplicationStatus;
+  conversationId: string;
+  createdAt: string;
+}
+
+export interface JobApplicants {
+  listingId: string;
+  listingTitle: string;
+  applicants: Applicant[];
 }
 
 // ---------- Moderation ----------

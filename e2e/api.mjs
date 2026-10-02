@@ -45,7 +45,7 @@ async function searchAll(params) {
 // ---------- Meta ----------
 const cats = (await get('/meta/categories')).json;
 const locs = (await get('/meta/locations')).json;
-ok(cats.length === 16, 'meta: 16 categories', cats.map((c) => c.key));
+ok(cats.length === 17, 'meta: 17 categories', cats.map((c) => c.key));
 ok(locs.length === 38, 'meta: 38 municipalities', locs.length);
 const placeCount = locs.reduce((n, m) => n + m.places.length, 0);
 ok(placeCount > 500, 'meta: >500 places', placeCount);
@@ -72,7 +72,7 @@ for (const c of cats) {
   }
 }
 ok(Object.values(totalByCat).reduce((a, b) => a + b, 0) === all.total, 'search: categories add up to total');
-for (const v of ['property', 'vehicles', 'goods']) {
+for (const v of ['property', 'vehicles', 'goods', 'jobs']) {
   const r = await searchAll({ vertical: v });
   const keys = cats.filter((c) => c.vertical === v).map((c) => c.key);
   ok(r.items.every((l) => keys.includes(l.category)), `search: vertical=${v}`);
@@ -554,3 +554,78 @@ const photoForm = (n = 1, type = 'image/png', data = png) => {
   ok((await get(`/listings/${id}`, { token: tPoster })).status === 404, 'deleted ad gone');
 }
 
+
+// Jobs: post without a photo, apply with a CV, review, privacy of the CV, cleanup on delete
+{
+  const tAdmin = await login('admin@demo.local', 'Admin1234!');
+  const tCompany = await login('company@demo.local');
+  const tSeeker = await login('seeker@demo.local');
+  const tSeller = await login('seller@demo.local');
+  const pdf = new Blob([new TextEncoder().encode('%PDF-1.4\n%%EOF\n')], { type: 'application/pdf' });
+  const applyForm = (letter, cv, name = 'my cv.pdf') => {
+    const f = new FormData();
+    f.append('coverLetter', letter);
+    if (cv) f.append('cv', cv, name);
+    return f;
+  };
+
+  const seeded = await searchAll({ vertical: 'jobs' });
+  ok(seeded.total >= 10 && seeded.items.every((l) => l.dealType === 'Job' && l.category === 'jobs'), 'jobs: seeded jobs searchable', seeded.total);
+  ok(seeded.items.some((l) => l.priceEur === 0), 'jobs: salary on request allowed');
+  const remote = await searchAll({ category: 'jobs', 'f.workplace': 'Remote' });
+  ok(remote.total >= 1 && remote.items.every((l) => l.attributes.workplace === 'Remote'), 'jobs: workplace filter');
+  const fullTime = await searchAll({ category: 'jobs', 'f.employmentType': 'FullTime', 'f.sector': 'IT & software' });
+  ok(fullTime.items.every((l) => l.attributes.employmentType === 'FullTime' && l.attributes.sector === 'IT & software'), 'jobs: type and field filters');
+  const wrongDeal = await post('/listings', { category: 'jobs', dealType: 'Sale', title: 'Wrong deal job', description: 'This should not be accepted at all.', priceEur: 10, municipality: 'Prishtinë', attributes: { sector: 'Other', employmentType: 'FullTime' } }, { token: tCompany });
+  ok(wrongDeal.status === 400, 'jobs: only the Job deal type', wrongDeal.status);
+
+  const created = await post('/listings', {
+    category: 'jobs', dealType: 'Job', title: `Test barista ${stamp}`, description: 'Make coffee, serve guests, keep the bar clean.', priceEur: 0,
+    municipality: 'Gjakovë', attributes: { sector: 'Hospitality & tourism', employmentType: 'PartTime', workplace: 'OnSite', cvRequired: false },
+  }, { token: tCompany });
+  ok(created.status === 201 && created.json.priceEur === 0, 'jobs: post a job with salary on request', created.text.slice(0, 300));
+  const jobId = created.json.id;
+  const sub = await post(`/listings/${jobId}/submit`, undefined, { token: tCompany });
+  ok(sub.status === 200, 'jobs: submit without a photo', sub.text.slice(0, 200));
+  ok([200, 204].includes((await post(`/admin/listings/${jobId}/approve`, undefined, { token: tAdmin })).status), 'jobs: approve');
+
+  ok((await call('POST', `/listings/${jobId}/applications`, { form: applyForm('Short') , token: tSeeker })).status === 400, 'jobs: cover letter too short');
+  ok((await call('POST', `/listings/${jobId}/applications`, { form: applyForm('I would love to work here, I have two years of barista experience.') })).status === 401, 'jobs: anonymous cannot apply');
+  ok((await call('POST', `/listings/${jobId}/applications`, { form: applyForm('Applying to my own job ad for testing purposes.'), token: tCompany })).status === 400, 'jobs: cannot apply to own ad');
+  const fake = new Blob([new TextEncoder().encode('MZ this is not a pdf')], { type: 'application/pdf' });
+  ok((await call('POST', `/listings/${jobId}/applications`, { form: applyForm('I would love to work here, I have two years of barista experience.', fake, 'cv.pdf'), token: tSeeker })).status === 400, 'jobs: fake PDF rejected');
+  const applied = await call('POST', `/listings/${jobId}/applications`, { form: applyForm('I would love to work here, I have two years of barista experience.', pdf), token: tSeeker });
+  ok(applied.status === 200 && applied.json.status === 'New' && applied.json.cvFileName === 'my cv.pdf', 'jobs: apply with CV', applied.text.slice(0, 300));
+  const appId = applied.json.id;
+  ok((await call('POST', `/listings/${jobId}/applications`, { form: applyForm('Applying a second time should not be possible at all.'), token: tSeeker })).status === 409, 'jobs: one application per person');
+  const notJob = seeded.items.length && (await searchAll({ category: 'apartments' })).items[0];
+  ok((await call('POST', `/listings/${notJob.id}/applications`, { form: applyForm('Trying to apply to an apartment, which makes no sense.'), token: tSeeker })).status === 400, 'jobs: only job ads take applications');
+
+  const list = await get(`/listings/${jobId}/applications`, { token: tCompany });
+  ok(list.status === 200 && list.json.applicants.length === 1 && list.json.applicants[0].name === 'Drita Berisha', 'jobs: employer lists applicants', list.text.slice(0, 300));
+  ok((await get(`/listings/${jobId}/applications`, { token: tSeller })).status === 404, 'jobs: others cannot list applicants');
+  ok((await get(`/listings/${jobId}/applications`)).status === 401, 'jobs: anonymous cannot list applicants');
+  const cvOwner = await call('GET', `/applications/${appId}/cv`, { token: tCompany });
+  ok(cvOwner.status === 200 && cvOwner.text.startsWith('%PDF'), 'jobs: employer downloads CV');
+  ok((await get(`/applications/${appId}/cv`, { token: tSeeker })).status === 200, 'jobs: applicant downloads own CV');
+  ok((await get(`/applications/${appId}/cv`, { token: tSeller })).status === 404, 'jobs: others cannot download CV');
+  ok((await get(`/applications/${appId}/cv`)).status === 401, 'jobs: anonymous cannot download CV');
+
+  const convs = (await get('/me/conversations', { token: tCompany })).json;
+  const conv = convs.find((c) => c.listingId === jobId);
+  ok(!!conv, 'jobs: application starts a conversation');
+  const msgs = (await get(`/conversations/${conv.id}/messages`, { token: tCompany })).json;
+  ok(msgs.length === 1 && msgs[0].application?.id === appId && msgs[0].application?.cvFileName === 'my cv.pdf', 'jobs: message carries the application', msgs);
+
+  ok((await put(`/applications/${appId}/status`, { status: 'Rejected' }, { token: tSeller })).status === 404, 'jobs: others cannot change status');
+  const st = await put(`/applications/${appId}/status`, { status: 'Shortlisted' }, { token: tCompany });
+  ok(st.status === 200 && st.json.status === 'Shortlisted', 'jobs: shortlist');
+  const mine = (await get('/me/applications', { token: tSeeker })).json;
+  ok(mine.find((a) => a.id === appId)?.status === 'Shortlisted', 'jobs: applicant sees status');
+  const mineFor = await get(`/listings/${jobId}/applications/mine`, { token: tSeeker });
+  ok(mineFor.status === 200 && mineFor.json.id === appId, 'jobs: my application for this ad');
+  ok((await get(`/listings/${jobId}/applications/mine`, { token: tSeller })).status === 204, 'jobs: no application yet');
+
+  ok((await del(`/listings/${jobId}`, { token: tCompany })).status === 204, 'jobs: delete job ad');
+  ok(!(await get('/me/applications', { token: tSeeker })).json.some((a) => a.id === appId), 'jobs: applications go with the ad');
+}

@@ -14,6 +14,7 @@ const KIND_ICON: Record<BusinessKind, string> = {
   CarDealer: 'car',
   RentACar: 'carKey',
   Shop: 'bag',
+  Company: 'briefcase',
   Other: 'briefcase',
 };
 

@@ -52,12 +52,15 @@ const RENEW_WINDOW_MS = 7 * 24 * 3600 * 1000;
               </div>
             </div>
             <div class="row-actions">
+              @if (l.dealType === 'Job') {
+                <a class="btn small" [routerLink]="['/my-ads', l.id, 'applicants']">Applicants</a>
+              }
               <a class="btn small ghost" [routerLink]="['/my-ads', l.id, 'edit']">Edit</a>
               @if (canRenew(l)) {
                 <button type="button" class="btn small" (click)="renew(l)">Renew 60 days</button>
               }
               @if (l.status === 'Active') {
-                <button type="button" class="btn small ghost" (click)="archive(l)">Mark sold/rented</button>
+                <button type="button" class="btn small ghost" (click)="archive(l)">{{ l.dealType === 'Job' ? 'Mark filled' : 'Mark sold/rented' }}</button>
               }
               <button type="button" class="btn small ghost danger" (click)="remove(l)">Delete</button>
             </div>
