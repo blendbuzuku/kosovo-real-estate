@@ -44,7 +44,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     private readonly string _mediaPath = Path.Combine(Path.GetTempPath(), $"realestate-media-{Guid.NewGuid():N}");
     private readonly string _serverConnection =
         Environment.GetEnvironmentVariable("TEST_DATABASE_URL")
-        ?? "Host=localhost;Port=5432;Username=realestate;Password=realestate;Database=postgres";
+        ?? "Host=localhost;Port=5433;Username=realestate;Password=realestate;Database=postgres";
 
     public FakeTimeProvider Clock { get; } = new(new DateTimeOffset(2026, 10, 1, 9, 0, 0, TimeSpan.Zero));
     public CapturingEmailSender Email { get; } = new();

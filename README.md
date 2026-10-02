@@ -39,7 +39,7 @@ frontend/
 Prerequisites: .NET 10 SDK, Node 22.22+ or 24, Docker (or a local PostgreSQL 16 with PostGIS).
 
 ```bash
-docker compose up -d                      # PostGIS on localhost:5432
+docker compose up -d                      # PostGIS on localhost:5433 (5433 so it doesn't clash with a local PostgreSQL)
 
 cd backend/src/RealEstate.Api
 dotnet run                                # http://localhost:5102, API docs at /scalar
