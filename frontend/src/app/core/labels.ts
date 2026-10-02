@@ -36,6 +36,7 @@ export const BUSINESS_KINDS: Record<BusinessKind, string> = {
   Developer: 'Developer / builder',
   CarDealer: 'Car dealer',
   RentACar: 'Rent a car',
+  Shop: 'Shop',
   Other: 'Other business',
 };
 

@@ -82,6 +82,14 @@ export const INTENTS: Intent[] = [
     criteria: { vertical: 'property', category: 'commercial' },
     hint: 'Shop, office, warehouse…',
   },
+  {
+    key: 'goods',
+    label: 'Clothes, phones, furniture and more',
+    short: 'Goods',
+    icon: 'bag',
+    criteria: { vertical: 'goods' },
+    hint: 'iPhone, winter coat, sofa, washing machine…',
+  },
 ];
 
 /** Finds the intent that best describes a search, so the right tab lights up. */
@@ -93,6 +101,7 @@ export function intentFor(c: SearchCriteria): Intent | undefined {
       (i.criteria.vertical ?? null) === (c.vertical ?? i.criteria.vertical ?? null),
   );
   if (exact) return exact;
+  if (c.vertical === 'goods') return INTENTS[7];
   if (c.dealType === 'RentNightly') return INTENTS[2];
   if (c.dealType === 'RentDaily') return INTENTS[4];
   if (c.category === 'land') return INTENTS[5];
@@ -243,17 +252,24 @@ export class Catalog {
   cardFacts(l: { category: string; dealType: DealType; attributes: Attributes }): string[] {
     const cat = this.category(l.category);
     if (!cat) return [];
+    // For goods the item type is already the card's kicker.
+    const kicker = cat.vertical === 'goods' ? this.goodsTypeField(cat)?.key : undefined;
     return cat.fields
-      .filter((f) => f.onCard && appliesTo(f, l.dealType))
+      .filter((f) => f.onCard && f.key !== kicker && appliesTo(f, l.dealType))
       .map((f) => formatField(f, l.attributes[f.key], true))
       .filter(Boolean)
       .slice(0, 4);
   }
 
-  /** Vehicle cards lead with make + year; property cards with the category name. */
+  /** Vehicle cards lead with the kind of vehicle, goods with the kind of item, property with the category name. */
   cardKicker(l: { category: string; attributes: Attributes }): string {
     const cat = this.category(l.category);
     if (!cat) return '';
+    if (cat.vertical === 'goods') {
+      const typeField = this.goodsTypeField(cat);
+      const kind = typeField ? formatField(typeField, l.attributes[typeField.key]) : '';
+      return kind && kind !== 'Other' ? kind : cat.name;
+    }
     if (cat.vertical === 'vehicles') {
       // The title already names make and model; the kicker says what kind of vehicle it is.
       const typeField = cat.fields.find((f) => ['bodyType', 'motoType', 'vanType'].includes(f.key));
@@ -263,5 +279,10 @@ export class Catalog {
     }
     const typeField = cat.fields.find((f) => f.key === 'landType' || f.key === 'commercialType');
     return typeField ? formatField(typeField, l.attributes[typeField.key]) || cat.name : cat.name.replace(' & villas', '').replace(/s$/, '');
+  }
+
+  /** The "Type" select of a goods category (clothingType, electronicsType…), if it has one. */
+  goodsTypeField(cat: Category): FieldDef | undefined {
+    return cat.fields.find((f) => f.type === 'Select' && f.key.endsWith('Type'));
   }
 }

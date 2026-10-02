@@ -58,6 +58,18 @@ public static class TestData
         Attributes = Attrs(new { make, model, year, mileageKm, fuel, transmission = "Manual", customsCleared = true })
     };
 
+    public static ListingUpsertRequest Item(
+        string category = "clothing", object? attributes = null, decimal price = 40, DealType deal = DealType.Sale) => new()
+    {
+        Category = category,
+        DealType = deal,
+        Title = "Winter coat, barely worn",
+        Description = "Warm wool coat, worn one season, no marks or stains.",
+        PriceEur = price,
+        Municipality = "Prishtinë",
+        Attributes = Attrs(attributes ?? new { gender = "Women", clothingType = "Jackets & coats", size = "M", condition = "LikeNew" })
+    };
+
     public static byte[] Jpeg(int width = 2400, int height = 1600)
     {
         using var image = new Image<Rgb24>(width, height, new Rgb24(120, 160, 200));

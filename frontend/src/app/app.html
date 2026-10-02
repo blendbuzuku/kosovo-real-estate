@@ -8,6 +8,7 @@
       <a routerLink="/search" [queryParams]="{ vertical: 'property' }" routerLinkActive="active">Property</a>
       <a routerLink="/search" [queryParams]="{ dealType: 'RentNightly' }">Stays</a>
       <a routerLink="/search" [queryParams]="{ vertical: 'vehicles' }">Vehicles</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'goods' }">Goods</a>
       <a routerLink="/businesses" routerLinkActive="active">Businesses</a>
     </nav>
     <span class="spacer"></span>
@@ -68,7 +69,7 @@
   <div class="container footer-grid">
     <div>
       <a routerLink="/" class="brand"><app-logo [size]="30" /> {{ brand }}</a>
-      <p class="muted small">Homes, stays, land, cars and rentals across all 38 municipalities of Kosovo.</p>
+      <p class="muted small">Homes, stays, cars, rentals and everything from home, across all 38 municipalities of Kosovo.</p>
     </div>
     <div>
       <strong>Property</strong>
@@ -83,6 +84,13 @@
       <a routerLink="/search" [queryParams]="{ vertical: 'vehicles', dealType: 'RentDaily' }">Rent a car</a>
       <a routerLink="/search" [queryParams]="{ category: 'motorcycles' }">Motorcycles</a>
       <a routerLink="/search" [queryParams]="{ category: 'vans-trucks' }">Vans &amp; trucks</a>
+    </div>
+    <div>
+      <strong>Goods</strong>
+      <a routerLink="/search" [queryParams]="{ vertical: 'goods', category: 'clothing' }">Clothing &amp; shoes</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'goods', category: 'electronics' }">Phones &amp; electronics</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'goods', category: 'furniture' }">Furniture &amp; home</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'goods' }">Everything for sale</a>
     </div>
     <div>
       <strong>{{ brand }}</strong>

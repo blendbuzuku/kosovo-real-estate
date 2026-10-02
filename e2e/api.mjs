@@ -45,7 +45,7 @@ async function searchAll(params) {
 // ---------- Meta ----------
 const cats = (await get('/meta/categories')).json;
 const locs = (await get('/meta/locations')).json;
-ok(cats.length === 7, 'meta: 7 categories', cats.map((c) => c.key));
+ok(cats.length === 16, 'meta: 16 categories', cats.map((c) => c.key));
 ok(locs.length === 38, 'meta: 38 municipalities', locs.length);
 const placeCount = locs.reduce((n, m) => n + m.places.length, 0);
 ok(placeCount > 500, 'meta: >500 places', placeCount);
@@ -72,7 +72,7 @@ for (const c of cats) {
   }
 }
 ok(Object.values(totalByCat).reduce((a, b) => a + b, 0) === all.total, 'search: categories add up to total');
-for (const v of ['property', 'vehicles']) {
+for (const v of ['property', 'vehicles', 'goods']) {
   const r = await searchAll({ vertical: v });
   const keys = cats.filter((c) => c.vertical === v).map((c) => c.key);
   ok(r.items.every((l) => keys.includes(l.category)), `search: vertical=${v}`);

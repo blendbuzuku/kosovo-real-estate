@@ -6,7 +6,7 @@ namespace RealEstate.Api.Domain;
 /// </summary>
 public record ListingSearchCriteria
 {
-    /// <summary>"property" or "vehicles": search a whole vertical when no category is picked.</summary>
+    /// <summary>"property", "vehicles" or "goods": search a whole vertical when no category is picked.</summary>
     public string? Vertical { get; init; }
     public string? Category { get; init; }
     public DealType? DealType { get; init; }

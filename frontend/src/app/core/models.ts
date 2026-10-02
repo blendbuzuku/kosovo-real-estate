@@ -1,12 +1,12 @@
 // Mirrors the API's DTOs (backend/src/RealEstate.Api/Features/**).
 
 export type UserRole = 'Member' | 'Business' | 'Admin';
-export type BusinessKind = 'RealEstateAgency' | 'Developer' | 'CarDealer' | 'RentACar' | 'Other';
+export type BusinessKind = 'RealEstateAgency' | 'Developer' | 'CarDealer' | 'RentACar' | 'Shop' | 'Other';
 export type DealType = 'Sale' | 'RentMonthly' | 'RentNightly' | 'RentDaily';
 export type ListingStatus = 'Draft' | 'PendingReview' | 'Active' | 'Rejected' | 'Expired' | 'Archived';
 export type SellerType = 'Private' | 'Business';
 export type ListingSort = 'Newest' | 'PriceAsc' | 'PriceDesc' | 'PricePerM2Asc' | 'YearDesc' | 'MileageAsc';
-export type Vertical = 'property' | 'vehicles';
+export type Vertical = 'property' | 'vehicles' | 'goods';
 export type ReportReason =
   | 'Spam'
   | 'Fraud'

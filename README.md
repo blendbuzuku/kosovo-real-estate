@@ -1,6 +1,6 @@
 # Tregu: buy, rent and book anything in Kosovo
 
-A classifieds marketplace for Kosovo where people and businesses post homes, stays, land, commercial space, cars, motorcycles and vans, for sale, monthly rent, per-night stays or per-day rental.
+A classifieds marketplace for Kosovo where people and businesses post homes, stays, land, commercial space, cars, motorcycles and vans, for sale, monthly rent, per-night stays or per-day rental, plus anything else from home: clothes, phones and electronics, furniture, appliances, baby gear, sports equipment, books, tools and more, new or used.
 
 Every ad shows what matters before you call: the **legal status** of a property (legalization, cadastre certificate *certifikata e pronësisë*, construction permit *leje ndërtimi*) and whether a car is **customs cleared** (*doganuar*). Every municipality, neighbourhood and village is selectable when searching and posting.
 
@@ -10,13 +10,13 @@ Every ad shows what matters before you call: the **legal status** of a property 
 
 | Area | Features |
 | --- | --- |
-| Categories | Apartments, houses & villas, land, commercial, cars, motorcycles, vans & trucks. Each category has its own fields (rooms and floor; plot and land type; make, model, year, mileage, fuel, gearbox; guests and minimum nights; deposit and minimum driver age…) defined once in `Domain/Categories.cs`. The post form, filters, result cards and spec lists are all generated from it, so adding a category is a backend-only change. |
+| Categories | Property (apartments, houses & villas, land, commercial), vehicles (cars, motorcycles, vans & trucks) and goods (clothing & shoes, phones & electronics, furniture & home, home appliances, baby & kids, sports & outdoors, books, music & hobbies, tools & building, everything else). Goods ask for condition, brand and the item's type, size or age where it matters. Each category has its own fields (rooms and floor; plot and land type; make, model, year, mileage, fuel, gearbox; guests and minimum nights; deposit and minimum driver age…) defined once in `Domain/Categories.cs`. The post form, filters, result cards and spec lists are all generated from it, so adding a category is a backend-only change. |
 | Deal types | For sale, monthly rent, per night (stays) and per day (rent a car). Each category says which it supports. |
 | Locations | All 38 municipalities with their neighbourhoods and villages (about 590 places). The "where" box finds any of them as you type, with or without ë/ç. Ads can add a street and an exact map pin. |
 | Search | Shortcuts (buy a home, rent, stays, cars, rent a car, land, commercial), filters built from the category's fields (ranges, "3+" steps, multi-choice chips, yes/no features), removable filter chips, sorting by price, €/m², year or mileage, a map view with price pins and "search this area", radius and bounding-box search on PostGIS. On phones the filters open in a bottom drawer. |
 | Ads | Photo gallery with full-screen viewer, key facts, grouped specs, a legal status panel, location map, similar ads nearby, a sticky contact bar on phones. |
 | Booking requests | Stays and rent-a-car ads take date requests (and guests for stays). The request arrives in the inbox with the dates and the total worked out, and respects minimum nights and maximum guests. |
-| Accounts | One personal account can search, message, book and post. Business accounts (real estate agency, developer, car dealer, rent a car, other) also get a public page with all their ads. |
+| Accounts | One personal account can search, message, book and post. Business accounts (real estate agency, developer, car dealer, rent a car, shop, other) also get a public page with all their ads. |
 | Posting | A five-step wizard: what, where, details, photos, publish. It suggests a title from the details, saves the draft before photos, and shows a checklist before sending for review. |
 | Trust | Admin review before ads go live, edits to a live ad send it back to review, reporting with takedown, 60-day expiry with reminder and renewal, rate-limited phone reveal. |
 | Alerts | Save any search, including field filters, and get emailed new matches. |
@@ -67,6 +67,8 @@ In Development the API migrates the database on startup and seeds demo data:
 | Car dealer | dealer@demo.local | Demo1234! |
 | Rent a car | rentacar@demo.local | Demo1234! |
 | Host (stays) | host@demo.local | Demo1234! |
+| Shop (phones, appliances) | shop@demo.local | Demo1234! |
+| Private seller (goods) | seller@demo.local | Demo1234! |
 | Private seller | owner@demo.local | Demo1234! |
 | Buyer | seeker@demo.local | Demo1234! |
 
@@ -86,8 +88,8 @@ The backend tests spin up the real API in memory against a throwaway database pe
 ```bash
 RateLimits__AuthPer10Minutes=1000 RateLimits__PhonePerHour=1000 RateLimits__MessagesPerHour=1000 dotnet run   # in backend/src/RealEstate.Api
 cd e2e && npm install && npx playwright install chromium
-node api.mjs   # ~1,000 checks: every filter of every category against the data, sorting, paging, locations, permissions, lifecycle
-node ui.mjs    # ~1,600 checks in Chromium: every page and action as visitor, member, business and admin, desktop and phone
+node api.mjs   # ~1,350 checks: every filter of every category against the data, sorting, paging, locations, permissions, lifecycle
+node ui.mjs    # ~2,150 checks in Chromium: every page and action as visitor, member, business and admin, desktop and phone
 ```
 
 `ui.mjs` posts one ad of every category and deal type through the wizard, moderates them, messages, books, reports and saves searches, checks that every count shown matches the API, and fails on any console error or unexpected API error. Set `APP_URL`, `API_URL` or `CHROMIUM_PATH` to point it elsewhere; screenshots land in `e2e/screenshots/`.
@@ -114,6 +116,7 @@ node ui.mjs    # ~1,600 checks in Chromium: every page and action as visitor, me
 | ![Post an ad wizard](docs/screenshots/4-post-wizard.png) | ![Business page](docs/screenshots/5-business-page.png) |
 | ![Filters on a phone](docs/screenshots/6-mobile-filters.png) | ![Ad on a phone](docs/screenshots/7-mobile-ad.png) |
 | ![Dark theme](docs/screenshots/8-dark-home.png) | ![Dark theme on a phone](docs/screenshots/9-dark-mobile-home.png) |
+| ![Clothing search](docs/screenshots/10-goods-search.png) | ![Phone ad on a phone](docs/screenshots/11-mobile-item.png) |
 
 ## Next steps
 

@@ -14,6 +14,7 @@ public enum BusinessKind
     Developer,
     CarDealer,
     RentACar,
+    Shop,
     Other
 }
 

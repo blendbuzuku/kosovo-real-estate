@@ -358,6 +358,7 @@ export class PostWizardPage {
   protected readonly verticals = [
     { key: 'property' as const, label: 'Property' },
     { key: 'vehicles' as const, label: 'Vehicles' },
+    { key: 'goods' as const, label: 'Goods' },
   ];
 
   protected readonly step = signal(0);
@@ -425,6 +426,15 @@ export class PostWizardPage {
       const f = cat.fields.find((x) => x.key === key);
       return f ? formatField(f, a[key]) : '';
     };
+    if (cat.vertical === 'goods') {
+      const typeField = cat.fields.find((f) => f.type === 'Select' && f.key.endsWith('Type'));
+      const kind = typeField && a[typeField.key] !== 'Other' ? label(typeField.key) : '';
+      const name = [a['brand'], a['model']].filter(Boolean).join(' ');
+      const size = a['size'] && cat.key === 'clothing' ? `, size ${a['size']}` : '';
+      const what = name && kind ? `${name} (${kind.toLowerCase()})` : name || kind;
+      if (!what) return '';
+      return `${what}${size}${a['condition'] === 'New' ? ', new' : ''}`.replace(/^./, (c) => c.toUpperCase());
+    }
     if (cat.vertical === 'vehicles') {
       const name = [a['make'], a['model'], a['year']].filter(Boolean).join(' ');
       if (!name) return '';
@@ -441,7 +451,9 @@ export class PostWizardPage {
   });
 
   protected readonly descriptionHint = computed(() =>
-    this.isVehicle()
+    this.category()?.vertical === 'goods'
+      ? 'What it is, how it’s been used, any marks or faults, what’s included…'
+      : this.isVehicle()
       ? 'Condition, service history, what’s included, why you’re selling…'
       : this.deal() === 'RentNightly'
         ? 'What guests will love, check-in, parking, house rules…'

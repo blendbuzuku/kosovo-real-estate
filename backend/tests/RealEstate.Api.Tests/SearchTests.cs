@@ -52,6 +52,31 @@ public class SearchTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Goods_are_searchable_by_their_own_fields()
+    {
+        var (owner, _) = await _factory.Register();
+        var coat = await TestData.CreateLiveListing(_factory, owner, TestData.Item());
+        var shoes = await TestData.CreateLiveListing(_factory, owner,
+            TestData.Item(attributes: new { gender = "Men", clothingType = "Shoes", size = "42", condition = "Good", brand = "Nike" }, price: 70));
+        var phone = await TestData.CreateLiveListing(_factory, owner,
+            TestData.Item("electronics", new { electronicsType = "Mobile phones", condition = "New", brand = "Samsung", storageGb = 256 }, 780));
+
+        Assert.Equal(3, (await Search("vertical=goods")).Count);
+        Assert.Equal([coat.Id], await Search("category=clothing&f.gender=Women"));
+        Assert.Equal([shoes.Id], await Search("category=clothing&f.size=42"));
+        Assert.Equal([phone.Id, coat.Id], await Search("vertical=goods&f.condition=New,LikeNew&sort=PriceDesc"));
+        Assert.Equal([phone.Id], await Search("category=electronics&f.storageGb.min=128"));
+        Assert.DoesNotContain(coat.Id, await Search("vertical=property"));
+
+        // Goods are sold, not rented, and need a condition.
+        var (seller, _) = await _factory.Register();
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest,
+            (await seller.PostAsJsonAsync("/api/listings", TestData.Item(deal: DealType.RentMonthly), ApiFactory.Json)).StatusCode);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest,
+            (await seller.PostAsJsonAsync("/api/listings", TestData.Item(attributes: new { gender = "Women", clothingType = "Shoes" }), ApiFactory.Json)).StatusCode);
+    }
+
+    [Fact]
     public async Task Car_filters_use_the_category_fields()
     {
         Assert.Equal([_hybrid.Id], await Search("category=cars&dealType=Sale&f.mileageKm.max=100000"));

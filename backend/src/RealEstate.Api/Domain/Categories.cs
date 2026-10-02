@@ -68,6 +68,7 @@ public static class Categories
 {
     public const string Property = "property";
     public const string Vehicles = "vehicles";
+    public const string Goods = "goods";
 
     private static FieldOption[] Opts(params (string Value, string Label)[] o) => o.Select(x => new FieldOption(x.Value, x.Label)).ToArray();
     private static FieldOption[] Same(params string[] values) => values.Select(v => new FieldOption(v, v)).ToArray();
@@ -254,7 +255,106 @@ public static class Categories
             CustomsCleared, .. CarRental
         ]);
 
-    public static readonly IReadOnlyList<CategoryDef> All = [Apartment, House, Land, Commercial, Cars, Motorcycles, Vans];
+
+    // ---------- Goods: everything else people sell from home ----------
+
+    private static readonly DealType[] SaleOnly = [DealType.Sale];
+
+    private static readonly FieldDef Condition = new("condition", "Condition", FieldType.Select)
+    {
+        Required = true, Filter = FilterKind.Multi, OnCard = true, Group = "Item",
+        Options = Opts(("New", "New, unused"), ("LikeNew", "Like new"), ("Good", "Used, good"), ("Fair", "Used, visible wear"), ("ForParts", "For parts / not working"))
+    };
+
+    private static readonly FieldDef Brand = new("brand", "Brand", FieldType.Text) { Filter = FilterKind.Contains, OnCard = true, Group = "Item" };
+
+    private static readonly FieldDef Delivery = Feature("delivery", "Can deliver or ship within Kosovo") with { Group = "Handover" };
+    private static readonly FieldDef Warranty = Feature("warranty", "Still under warranty") with { Group = "Item" };
+
+    private static FieldDef ItemType(string key, string label, params string[] options) =>
+        new(key, label, FieldType.Select) { Required = true, Filter = FilterKind.Multi, OnCard = true, Group = "Item", Options = Same(options) };
+
+    private static readonly FieldDef Colour = new("color", "Colour", FieldType.Select)
+    {
+        Filter = FilterKind.Multi, Group = "Item",
+        Options = Same("Black", "White", "Grey", "Blue", "Red", "Green", "Brown", "Beige", "Pink", "Yellow", "Multicolour", "Other")
+    };
+
+    private static readonly CategoryDef Clothing = new("clothing", "Clothing & shoes", Goods, "shirt", SaleOnly,
+    [
+        new("gender", "For", FieldType.Select)
+            { Required = true, Filter = FilterKind.Multi, OnCard = true, Group = "Item", Options = Same("Women", "Men", "Girls", "Boys", "Baby", "Unisex") },
+        ItemType("clothingType", "Type", "Tops & T-shirts", "Shirts & blouses", "Sweaters & hoodies", "Trousers & jeans", "Dresses & skirts",
+            "Jackets & coats", "Suits & formal wear", "Wedding & evening wear", "Traditional wear", "Sportswear", "Shoes", "Bags", "Accessories & jewellery", "Other"),
+        new("size", "Size", FieldType.Text) { Filter = FilterKind.Contains, OnCard = true, Group = "Item", Help = "As on the label, e.g. M, 38 or 42." },
+        Condition, Brand with { OnCard = false }, Colour, Delivery
+    ]);
+
+    private static readonly CategoryDef Electronics = new("electronics", "Phones & electronics", Goods, "smartphone", SaleOnly,
+    [
+        ItemType("electronicsType", "Type", "Mobile phones", "Tablets", "Laptops", "Desktop computers", "Monitors", "TVs", "Audio & headphones",
+            "Cameras", "Gaming consoles & games", "Smartwatches", "Accessories & parts", "Other"),
+        Condition, Brand, new("model", "Model", FieldType.Text) { Filter = FilterKind.Contains, Group = "Item" },
+        new("storageGb", "Storage", FieldType.Integer) { Unit = "GB", Filter = FilterKind.Min, Min = 1, Max = 100_000, Group = "Item" },
+        Warranty, Delivery
+    ]);
+
+    private static readonly CategoryDef Furniture = new("furniture", "Furniture & home", Goods, "sofa", SaleOnly,
+    [
+        ItemType("homeType", "Type", "Sofas & armchairs", "Tables & chairs", "Beds & mattresses", "Wardrobes & storage", "Kitchen & dining",
+            "Office furniture", "Lighting", "Carpets & textiles", "Decor", "Garden & balcony", "Other"),
+        Condition,
+        new("material", "Material", FieldType.Select)
+            { Filter = FilterKind.Multi, Group = "Item", Options = Same("Wood", "Metal", "Glass", "Fabric", "Leather", "Plastic", "Stone", "Other") },
+        Colour, Feature("pickupOnly", "Buyer collects") with { Group = "Handover" }, Delivery
+    ]);
+
+    private static readonly CategoryDef Appliances = new("appliances", "Home appliances", Goods, "fridge", SaleOnly,
+    [
+        ItemType("applianceType", "Type", "Fridges & freezers", "Washing machines", "Dryers", "Dishwashers", "Cookers & ovens", "Microwaves",
+            "Air conditioners", "Heaters & stoves", "Water heaters", "Vacuum cleaners", "Small kitchen appliances", "Other"),
+        Condition, Brand,
+        new("energyClass", "Energy class", FieldType.Select) { Filter = FilterKind.Multi, Group = "Item", Options = Same("A+++", "A++", "A+", "A", "B", "C", "D or lower") },
+        Warranty, Delivery
+    ]);
+
+    private static readonly CategoryDef Kids = new("kids", "Baby & kids", Goods, "stroller", SaleOnly,
+    [
+        ItemType("kidsType", "Type", "Prams & strollers", "Car seats", "Cots & nursery", "Toys", "Kids' clothes", "Feeding & care", "School supplies", "Other"),
+        new("ageGroup", "Age", FieldType.Select)
+            { Filter = FilterKind.Multi, OnCard = true, Group = "Item", Options = Same("0–12 months", "1–3 years", "3–6 years", "6–12 years", "12+ years") },
+        Condition, Brand with { OnCard = false }, Delivery
+    ]);
+
+    private static readonly CategoryDef Sports = new("sports", "Sports & outdoors", Goods, "ball", SaleOnly,
+    [
+        ItemType("sportsType", "Type", "Bicycles & e-bikes", "Fitness & gym", "Football", "Basketball", "Ski & snowboard", "Camping & hiking",
+            "Fishing & hunting", "Water sports", "Other"),
+        Condition, Brand, new("size", "Size", FieldType.Text) { Group = "Item", Help = "Frame size, shoe size or similar, if it matters." }, Delivery
+    ]);
+
+    private static readonly CategoryDef Hobbies = new("hobbies", "Books, music & hobbies", Goods, "book", SaleOnly,
+    [
+        ItemType("hobbyType", "Type", "Books", "Textbooks", "Musical instruments", "Records, CDs & films", "Art", "Collectibles & antiques",
+            "Board games & puzzles", "Crafts", "Other"),
+        Condition, Delivery
+    ]);
+
+    private static readonly CategoryDef Tools = new("tools", "Tools & building", Goods, "wrench", SaleOnly,
+    [
+        ItemType("toolType", "Type", "Power tools", "Hand tools", "Garden tools & machines", "Building materials", "Doors & windows",
+            "Plumbing & heating", "Electrical", "Generators & compressors", "Other"),
+        Condition, Brand, Delivery
+    ]);
+
+    private static readonly CategoryDef OtherGoods = new("other-goods", "Everything else", Goods, "box", SaleOnly,
+        [Condition, Brand, Delivery]);
+
+    public static readonly IReadOnlyList<CategoryDef> All =
+    [
+        Apartment, House, Land, Commercial, Cars, Motorcycles, Vans,
+        Clothing, Electronics, Furniture, Appliances, Kids, Sports, Hobbies, Tools, OtherGoods
+    ];
 
     public static CategoryDef? Find(string? key) => All.FirstOrDefault(c => c.Key == key);
 

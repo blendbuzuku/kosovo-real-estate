@@ -13,6 +13,7 @@ const KIND_ICON: Record<BusinessKind, string> = {
   Developer: 'building',
   CarDealer: 'car',
   RentACar: 'carKey',
+  Shop: 'bag',
   Other: 'briefcase',
 };
 

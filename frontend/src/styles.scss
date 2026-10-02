@@ -706,7 +706,7 @@ button.link {
   }
   .footer-grid {
     display: grid;
-    grid-template-columns: 2fr repeat(3, 1fr);
+    grid-template-columns: 2fr repeat(4, 1fr);
     gap: 28px;
     > div {
       display: grid;
@@ -1008,6 +1008,15 @@ button.link {
 [data-cat='motorcycles'] { --hue: #e5484d; }
 [data-cat='vans-trucks'] { --hue: #0e9f8f; }
 [data-cat='rent-a-car'] { --hue: #4f6bff; }
+[data-cat='clothing'] { --hue: #d9468f; }
+[data-cat='electronics'] { --hue: #3b82f6; }
+[data-cat='furniture'] { --hue: #b7791f; }
+[data-cat='appliances'] { --hue: #0891b2; }
+[data-cat='kids'] { --hue: #f59e0b; }
+[data-cat='sports'] { --hue: #16a34a; }
+[data-cat='hobbies'] { --hue: #8b5cf6; }
+[data-cat='tools'] { --hue: #ea580c; }
+[data-cat='other-goods'] { --hue: #64748b; }
 
 .category-tiles {
   display: grid;

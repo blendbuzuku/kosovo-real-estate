@@ -70,7 +70,14 @@ public static class Seeder
             Address = "Prishtina International Airport",
             Description = "Cars from €18 a day with free delivery to the airport. Diaspora discounts in summer."
         });
-        db.Users.AddRange(member, host, seeker, agency, developer, dealer, rentACar);
+        var shop = NewUser("shop@demo.local", "TechZone Prishtina", "+383 49 808 808", new Business
+        {
+            Name = "TechZone Prishtina", Slug = "techzone", Kind = BusinessKind.Shop, Municipality = "Prishtinë",
+            Address = "Rr. Nëna Terezë 22",
+            Description = "Phones, laptops and home appliances, new and certified refurbished, with warranty and delivery across Kosovo."
+        });
+        var seller = NewUser("seller@demo.local", "Lirie Hoxha", "+383 44 909 110");
+        db.Users.AddRange(member, host, seeker, agency, developer, dealer, rentACar, shop, seller);
 
         void Add(User owner, string category, DealType deal, string title, string description, decimal price,
                  string municipality, string? place, object attributes, bool negotiable = false)
@@ -282,6 +289,78 @@ public static class Seeder
             new Dictionary<string, object?> { ["make"] = "Mercedes-Benz", ["model"] = "Sprinter 316 CDI", ["year"] = 2017, ["mileageKm"] = 240000, ["fuel"] = "Diesel", ["transmission"] = "Manual", ["vanType"] = "Box truck", ["payloadKg"] = 1200, ["seats"] = 3, ["customsCleared"] = true });
         Add(rentACar, "vans-trucks", DealType.RentDaily, "Rent a Ford Transit van for moving", "Ford Transit cargo van for moves and deliveries, by the day.", 45m, "Prishtinë", null,
             new Dictionary<string, object?> { ["make"] = "Ford", ["model"] = "Transit", ["year"] = 2021, ["fuel"] = "Diesel", ["transmission"] = "Manual", ["vanType"] = "Van", ["payloadKg"] = 1100, ["seats"] = 3, ["customsCleared"] = true, ["depositEur"] = 300, ["minDriverAge"] = 23 });
+
+        // Things from around the house: clothes, electronics, furniture and the rest.
+        void Item(User owner, string category, string title, string description, decimal price, string municipality, string? place,
+                  Dictionary<string, object?> attributes, bool negotiable = false) =>
+            Add(owner, category, DealType.Sale, title, description, price, municipality, place, attributes, negotiable);
+
+        Item(seller, "clothing", "Zara wool coat, women's M", "Camel wool-blend coat, worn one winter, dry-cleaned.", 45m, "Prishtinë", "Dardania",
+            new() { ["gender"] = "Women", ["clothingType"] = "Jackets & coats", ["size"] = "M", ["condition"] = "LikeNew", ["brand"] = "Zara", ["color"] = "Beige" }, negotiable: true);
+        Item(seller, "clothing", "Nike Air Max 90, size 42", "Original Nike Air Max 90, worn a few times, with box.", 70m, "Prishtinë", "Ulpiana",
+            new() { ["gender"] = "Men", ["clothingType"] = "Shoes", ["size"] = "42", ["condition"] = "Good", ["brand"] = "Nike", ["color"] = "White", ["delivery"] = true });
+        Item(member, "clothing", "Wedding dress with veil, size 38", "Ivory lace wedding dress, worn once, professionally cleaned.", 350m, "Prizren", null,
+            new() { ["gender"] = "Women", ["clothingType"] = "Wedding & evening wear", ["size"] = "38", ["condition"] = "LikeNew", ["color"] = "White" }, negotiable: true);
+        Item(seller, "clothing", "Kids' winter jackets, 3 pieces, age 6–8", "Three warm jackets, boys, size 122–128. Sold together.", 30m, "Ferizaj", null,
+            new() { ["gender"] = "Boys", ["clothingType"] = "Jackets & coats", ["size"] = "122–128", ["condition"] = "Good", ["color"] = "Blue" });
+        Item(member, "clothing", "Traditional Albanian xhubleta, handmade", "Handmade xhubleta for festivals and weddings, new.", 280m, "Gjakovë", null,
+            new() { ["gender"] = "Women", ["clothingType"] = "Traditional wear", ["size"] = "S", ["condition"] = "New", ["color"] = "Multicolour" });
+        Item(seller, "clothing", "Men's suit, navy, 50", "Slim-fit navy suit, jacket and trousers, worn twice.", 60m, "Gjilan", null,
+            new() { ["gender"] = "Men", ["clothingType"] = "Suits & formal wear", ["size"] = "50", ["condition"] = "LikeNew", ["color"] = "Blue" });
+
+        Item(shop, "electronics", "iPhone 14 128 GB, refurbished", "Certified refurbished iPhone 14, battery 92%, 12-month warranty.", 520m, "Prishtinë", null,
+            new() { ["electronicsType"] = "Mobile phones", ["condition"] = "LikeNew", ["brand"] = "Apple", ["model"] = "iPhone 14", ["storageGb"] = 128, ["warranty"] = true, ["delivery"] = true });
+        Item(shop, "electronics", "Samsung Galaxy S24, new in box", "Sealed Samsung Galaxy S24 256 GB, two-year warranty.", 780m, "Prishtinë", null,
+            new() { ["electronicsType"] = "Mobile phones", ["condition"] = "New", ["brand"] = "Samsung", ["model"] = "Galaxy S24", ["storageGb"] = 256, ["warranty"] = true, ["delivery"] = true });
+        Item(member, "electronics", "Lenovo ThinkPad T14 laptop", "ThinkPad T14, 16 GB RAM, 512 GB SSD, great for students.", 430m, "Pejë", null,
+            new() { ["electronicsType"] = "Laptops", ["condition"] = "Good", ["brand"] = "Lenovo", ["model"] = "ThinkPad T14", ["storageGb"] = 512 }, negotiable: true);
+        Item(seller, "electronics", "PlayStation 5 with two controllers", "PS5 disc edition, two controllers and three games.", 390m, "Prishtinë", "Kodra e Diellit",
+            new() { ["electronicsType"] = "Gaming consoles & games", ["condition"] = "Good", ["brand"] = "Sony", ["model"] = "PlayStation 5", ["storageGb"] = 825 });
+        Item(member, "electronics", "LG 55\" 4K smart TV", "LG 55 inch 4K TV with remote and wall bracket.", 260m, "Mitrovicë", null,
+            new() { ["electronicsType"] = "TVs", ["condition"] = "Good", ["brand"] = "LG" });
+
+        Item(seller, "furniture", "Corner sofa with bed function", "Grey corner sofa, pulls out into a double bed, with storage.", 220m, "Prishtinë", "Arbëria (Dragodan)",
+            new() { ["homeType"] = "Sofas & armchairs", ["condition"] = "Good", ["material"] = "Fabric", ["color"] = "Grey", ["pickupOnly"] = true }, negotiable: true);
+        Item(member, "furniture", "Solid oak dining table with 6 chairs", "Handmade oak table, 180 × 90 cm, six chairs.", 450m, "Pejë", null,
+            new() { ["homeType"] = "Tables & chairs", ["condition"] = "LikeNew", ["material"] = "Wood", ["color"] = "Brown" });
+        Item(seller, "furniture", "Wardrobe with sliding mirror doors", "White wardrobe, 200 cm wide, disassembled and ready to collect.", 120m, "Fushë Kosovë", null,
+            new() { ["homeType"] = "Wardrobes & storage", ["condition"] = "Good", ["material"] = "Wood", ["color"] = "White", ["pickupOnly"] = true });
+        Item(member, "furniture", "Hand-knotted wool carpet, 2 × 3 m", "Traditional red wool carpet from Gjakova, well kept.", 300m, "Gjakovë", null,
+            new() { ["homeType"] = "Carpets & textiles", ["condition"] = "Good", ["material"] = "Fabric", ["color"] = "Red" }, negotiable: true);
+
+        Item(shop, "appliances", "Bosch washing machine 8 kg, new", "Bosch Serie 4, 8 kg, 1400 rpm, delivery and installation included.", 499m, "Prishtinë", null,
+            new() { ["applianceType"] = "Washing machines", ["condition"] = "New", ["brand"] = "Bosch", ["energyClass"] = "A+++", ["warranty"] = true, ["delivery"] = true });
+        Item(member, "appliances", "Gorenje fridge freezer", "Gorenje combined fridge freezer, 185 cm, works perfectly.", 150m, "Ferizaj", null,
+            new() { ["applianceType"] = "Fridges & freezers", ["condition"] = "Good", ["brand"] = "Gorenje", ["energyClass"] = "A+" });
+        Item(seller, "appliances", "Wood-burning stove (sobë me dru)", "Cast-iron stove with oven, heats 60 m². Used two winters.", 180m, "Podujevë", null,
+            new() { ["applianceType"] = "Heaters & stoves", ["condition"] = "Good" });
+        Item(shop, "appliances", "Gree inverter air conditioner 12000 BTU", "Gree inverter split AC, heating and cooling, installation available.", 420m, "Prishtinë", null,
+            new() { ["applianceType"] = "Air conditioners", ["condition"] = "New", ["brand"] = "Gree", ["energyClass"] = "A++", ["warranty"] = true, ["delivery"] = true });
+
+        Item(seller, "kids", "Cybex stroller with car seat", "Cybex travel system, stroller plus infant car seat.", 240m, "Prishtinë", "Bregu i Diellit",
+            new() { ["kidsType"] = "Prams & strollers", ["ageGroup"] = "0–12 months", ["condition"] = "Good", ["brand"] = "Cybex" }, negotiable: true);
+        Item(member, "kids", "LEGO bundle, 4 kg", "Mixed LEGO bricks and three complete City sets.", 55m, "Prizren", null,
+            new() { ["kidsType"] = "Toys", ["ageGroup"] = "6–12 years", ["condition"] = "Good", ["brand"] = "LEGO", ["delivery"] = true });
+
+        Item(member, "sports", "Trek mountain bike, size L", "Trek Marlin 5, 29\" wheels, recently serviced.", 380m, "Prishtinë", null,
+            new() { ["sportsType"] = "Bicycles & e-bikes", ["condition"] = "Good", ["brand"] = "Trek", ["size"] = "L" });
+        Item(seller, "sports", "Ski set for Brezovica, boots 27.5", "Rossignol skis 170 cm with boots and poles.", 150m, "Shtërpcë", null,
+            new() { ["sportsType"] = "Ski & snowboard", ["condition"] = "Good", ["brand"] = "Rossignol", ["size"] = "170 cm" });
+        Item(member, "sports", "Home gym dumbbells and bench", "Adjustable bench and 2 × 20 kg dumbbells.", 90m, "Gjilan", null,
+            new() { ["sportsType"] = "Fitness & gym", ["condition"] = "Good" });
+
+        Item(seller, "hobbies", "Yamaha acoustic guitar with case", "Yamaha F310 acoustic guitar, soft case and tuner.", 110m, "Prishtinë", null,
+            new() { ["hobbyType"] = "Musical instruments", ["condition"] = "Good", ["delivery"] = true });
+        Item(member, "hobbies", "Ismail Kadare books, 12 volumes", "Twelve Kadare novels in Albanian, good condition.", 40m, "Pejë", null,
+            new() { ["hobbyType"] = "Books", ["condition"] = "Good", ["delivery"] = true });
+
+        Item(member, "tools", "Makita cordless drill set", "Makita 18 V drill with two batteries and charger.", 95m, "Ferizaj", null,
+            new() { ["toolType"] = "Power tools", ["condition"] = "Good", ["brand"] = "Makita" });
+        Item(seller, "tools", "Petrol generator 5.5 kW", "Honda-engine generator, used for power cuts only.", 350m, "Vushtrri", null,
+            new() { ["toolType"] = "Generators & compressors", ["condition"] = "LikeNew", ["brand"] = "Honda" }, negotiable: true);
+
+        Item(member, "other-goods", "Coffee machine for a café, 2 groups", "Two-group espresso machine from a closed café, works.", 650m, "Prishtinë", null,
+            new() { ["condition"] = "Good", ["brand"] = "La Spaziale" }, negotiable: true);
 
         await db.SaveChangesAsync();
     }

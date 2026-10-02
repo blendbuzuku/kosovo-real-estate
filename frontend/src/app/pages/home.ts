@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Api } from '../core/api.service';
@@ -10,6 +11,14 @@ import { Icon } from '../shared/icon';
 import { ListingCard } from '../shared/listing-card';
 import { LocationInput, LocationValue } from '../shared/location-input';
 
+interface Tile {
+  key: string;
+  label: string;
+  icon: string;
+  count: string | number;
+  params: object;
+}
+
 interface Rail {
   title: string;
   subtitle: string;
@@ -19,6 +28,7 @@ interface Rail {
 
 const RAILS: Omit<Rail, 'items'>[] = [
   { title: 'Property for sale', subtitle: 'Apartments, houses, land and commercial, newest first', criteria: { vertical: 'property', dealType: 'Sale' } },
+  { title: 'Fresh finds', subtitle: 'Clothes, phones, furniture and more, new and used', criteria: { vertical: 'goods' } },
   { title: 'Stays for your next visit', subtitle: 'Book by the night: city flats, old-town houses, mountain chalets', criteria: { dealType: 'RentNightly' } },
   { title: 'Cars for sale', subtitle: 'From private sellers and dealers, customs status shown', criteria: { category: 'cars', dealType: 'Sale' } },
   { title: 'Rent a car', subtitle: 'Pick-up in town or delivered to the airport', criteria: { vertical: 'vehicles', dealType: 'RentDaily' } },
@@ -28,13 +38,13 @@ const RAILS: Omit<Rail, 'items'>[] = [
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, Icon, ListingCard, LocationInput],
+  imports: [NgTemplateOutlet, RouterLink, Icon, ListingCard, LocationInput],
   template: `
     <section class="hero">
       <div class="container">
         <span class="eyebrow"><span class="dot"></span> {{ liveTotal() }} live ads across Kosovo</span>
-        <h1>Find your next home, car or stay <span class="accent">in Kosovo.</span></h1>
-        <p class="lead">Buy, rent and book from people and businesses in all 38 municipalities, down to the neighbourhood and village.</p>
+        <h1>Buy, sell and rent anything <span class="accent">in Kosovo.</span></h1>
+        <p class="lead">Homes, cars, stays, clothes, phones, furniture and everything in between, from people and businesses in all 38 municipalities.</p>
 
         <div class="quick-search card">
           <div class="qs-tabs" role="tablist" aria-label="What are you looking for?">
@@ -75,10 +85,25 @@ const RAILS: Omit<Rail, 'items'>[] = [
     <div class="container">
       <section class="section">
         <div class="section-head">
-          <h2>Browse by category</h2>
+          <h2>Homes, vehicles and stays</h2>
         </div>
+        <ng-container *ngTemplateOutlet="tileGrid; context: { $implicit: tiles() }" />
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>Everything from home</h2>
+            <p class="muted small">Clothes, phones, furniture, appliances and the rest, new or used</p>
+          </div>
+          <a class="see-all" routerLink="/search" [queryParams]="{ vertical: 'goods' }">See all <app-icon name="arrowRight" [size]="16" /></a>
+        </div>
+        <ng-container *ngTemplateOutlet="tileGrid; context: { $implicit: goodsTiles() }" />
+      </section>
+
+      <ng-template #tileGrid let-list>
         <div class="category-tiles">
-          @for (t of tiles(); track t.label) {
+          @for (t of list; track t.label) {
             <a class="category-tile" routerLink="/search" [queryParams]="t.params" [attr.data-cat]="t.key">
               <span class="tile-icon"><app-icon [name]="t.icon" [size]="28" [stroke]="1.6" /></span>
               <strong>{{ t.label }}</strong>
@@ -86,7 +111,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
             </a>
           }
         </div>
-      </section>
+      </ng-template>
 
       @for (r of rails(); track r.title) {
         @if (r.items.length) {
@@ -130,7 +155,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
           <div class="section-head">
             <div>
               <h2>Businesses on Tregu</h2>
-              <p class="muted small">Agencies, developers, car dealers and rent-a-car companies with their own pages</p>
+              <p class="muted small">Agencies, developers, car dealers, rent-a-car companies and shops with their own pages</p>
             </div>
             <a class="see-all" routerLink="/businesses">All businesses <app-icon name="arrowRight" [size]="16" /></a>
           </div>
@@ -151,7 +176,7 @@ const RAILS: Omit<Rail, 'items'>[] = [
       <section class="section post-cta card">
         <div>
           <h2>Have something to sell or rent?</h2>
-          <p class="muted">Post a home, a room for the night, land, a car or your whole rental fleet. It’s free, and takes about three minutes.</p>
+          <p class="muted">Post a home, a room for the night, a car, or the things you no longer need. It’s free, and takes about three minutes.</p>
         </div>
         <a class="btn big" [routerLink]="auth.isLoggedIn() ? '/post' : '/register'"><app-icon name="plus" /> Post an ad, free</a>
       </section>
@@ -182,8 +207,8 @@ export class HomePage {
 
   /** One tile per category, plus "Stays" and "Rent a car" since those are their own worlds (they overlap the category tiles). */
   protected readonly tiles = computed(() => {
-    const tiles: { key: string; label: string; icon: string; count: string | number; params: object }[] = [];
-    for (const cat of this.catalog.categories()) {
+    const tiles: Tile[] = [];
+    for (const cat of this.catalog.categories().filter((c) => c.vertical !== 'goods')) {
       tiles.push({
         key: cat.key,
         label: cat.name,
@@ -198,6 +223,16 @@ export class HomePage {
     tiles.push({ key: 'rent-a-car', label: 'Rent a car', icon: 'carKey', count: formatNumber(rentals), params: { vertical: 'vehicles', dealType: 'RentDaily' } });
     return tiles;
   });
+
+  protected readonly goodsTiles = computed<Tile[]>(() =>
+    this.catalog.inVertical('goods').map((cat) => ({
+      key: cat.key,
+      label: cat.name,
+      icon: cat.icon,
+      count: formatNumber(this.catalog.liveCount(cat)),
+      params: { category: cat.key, vertical: cat.vertical },
+    })),
+  );
 
   constructor() {
     RAILS.forEach((r, i) =>

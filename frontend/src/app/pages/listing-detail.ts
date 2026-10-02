@@ -46,7 +46,7 @@ function isoDate(d: Date) {
     @if (listing(); as l) {
       <div class="container detail">
         <nav class="crumbs" aria-label="Breadcrumb">
-          <a routerLink="/search" [queryParams]="{ vertical: category()?.vertical }">{{ category()?.vertical === 'vehicles' ? 'Vehicles' : 'Property' }}</a>
+          <a routerLink="/search" [queryParams]="{ vertical: category()?.vertical }">{{ verticalName() }}</a>
           <app-icon name="chevronRight" [size]="14" />
           <a routerLink="/search" [queryParams]="{ category: l.category, dealType: l.dealType }">{{ category()?.name }}</a>
           <app-icon name="chevronRight" [size]="14" />
@@ -122,7 +122,7 @@ function isoDate(d: Date) {
             }
 
             <section class="dsec">
-              <h2>About this {{ category()?.vertical === 'vehicles' ? 'vehicle' : dealNoun() }}</h2>
+              <h2>About this {{ dealNoun() }}</h2>
               <p class="description">{{ l.description }}</p>
             </section>
 
@@ -406,8 +406,15 @@ export class ListingDetailPage {
   });
 
   protected readonly dealNoun = computed(() => {
-    const d = this.listing()?.dealType;
-    return d === 'RentNightly' ? 'stay' : 'property';
+    const v = this.category()?.vertical;
+    if (v === 'vehicles') return 'vehicle';
+    if (v === 'goods') return 'item';
+    return this.listing()?.dealType === 'RentNightly' ? 'stay' : 'property';
+  });
+
+  protected readonly verticalName = computed(() => {
+    const v = this.category()?.vertical;
+    return v === 'vehicles' ? 'Vehicles' : v === 'goods' ? 'Goods' : 'Property';
   });
 
   /** The category's on-card fields as big tiles under the photos. */
@@ -441,7 +448,7 @@ export class ListingDetailPage {
       }
     }
     // A short "Type" row for property, where it isn't obvious from the fields.
-    const details = groups.find((g) => g.name === 'Details' || g.name === 'Vehicle');
+    const details = groups.find((g) => g.name === 'Details' || g.name === 'Vehicle' || g.name === 'Item');
     details?.rows.unshift({ label: 'Ad type', value: `${cat.name} · ${DEAL_TYPES[l.dealType].toLowerCase()}` });
     return groups.filter((g) => g.rows.length || g.features.length);
   });
@@ -587,6 +594,7 @@ export class ListingDetailPage {
   private defaultMessage(l: ListingDetail): string {
     const cat = this.catalog.category(l.category);
     if (cat?.vertical === 'vehicles') return 'Hello, is the vehicle still available? When could I see it?';
+    if (cat?.vertical === 'goods') return 'Hello, is this still available? Where could I pick it up?';
     if (l.dealType === 'RentMonthly') return 'Hello, is it still available to rent? I would like to arrange a viewing.';
     if (cat?.key === 'land') return 'Hello, is the land still available? Could you send the cadastre details?';
     return 'Hello, is this property still available? I would like to arrange a viewing.';
