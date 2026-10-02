@@ -1,44 +1,42 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import {
-  DealType,
-  HeatingType,
-  LegalizationStatus,
-  ListingSort,
-  ListingStatus,
-  PropertyType,
-  ReportReason,
-} from './models';
-
-export const PROPERTY_TYPES: Record<PropertyType, string> = {
-  Apartment: 'Apartment',
-  House: 'House',
-  Land: 'Land',
-  Commercial: 'Commercial',
-};
+import { BusinessKind, DealType, ListingSort, ListingStatus, ReportReason } from './models';
 
 export const DEAL_TYPES: Record<DealType, string> = {
   Sale: 'For sale',
-  RentMonthly: 'For rent (monthly)',
-  RentShortTerm: 'Short-term rent',
+  RentMonthly: 'Monthly rent',
+  RentNightly: 'Per night',
+  RentDaily: 'Per day',
 };
 
-export const HEATING: Record<HeatingType, string> = {
-  None: 'None',
-  District: 'District heating (Termokos)',
-  Central: 'Central heating',
-  Electric: 'Electric',
-  HeatPump: 'Heat pump',
-  AirConditioning: 'Air conditioning',
-  Wood: 'Wood / pellet stove',
-  Other: 'Other',
+/** What the person wants to do, used on buttons and tabs. */
+export const DEAL_ACTIONS: Record<DealType, string> = {
+  Sale: 'Buy',
+  RentMonthly: 'Rent monthly',
+  RentNightly: 'Stay per night',
+  RentDaily: 'Rent per day',
 };
 
-export const LEGALIZATION: Record<LegalizationStatus, string> = {
-  Unknown: 'Not specified',
-  Legalized: 'Legalized',
-  InProcess: 'Legalization in process',
-  NotLegalized: 'Not legalized',
-  NotRequired: 'Built with permit (no legalization needed)',
+/** What the poster is doing, used in the post wizard. */
+export const DEAL_POST: Record<DealType, { title: string; text: string }> = {
+  Sale: { title: 'Sell', text: 'One price, to a buyer.' },
+  RentMonthly: { title: 'Rent out monthly', text: 'Long-term tenants, price per month.' },
+  RentNightly: { title: 'Rent per night', text: 'Guests and tourists, price per night.' },
+  RentDaily: { title: 'Rent per day', text: 'Rent-a-car style, price per day.' },
+};
+
+export const DEAL_UNIT: Record<DealType, string> = {
+  Sale: '',
+  RentMonthly: 'month',
+  RentNightly: 'night',
+  RentDaily: 'day',
+};
+
+export const BUSINESS_KINDS: Record<BusinessKind, string> = {
+  RealEstateAgency: 'Real estate agency',
+  Developer: 'Developer / builder',
+  CarDealer: 'Car dealer',
+  RentACar: 'Rent a car',
+  Other: 'Other business',
 };
 
 export const STATUS: Record<ListingStatus, string> = {
@@ -51,11 +49,12 @@ export const STATUS: Record<ListingStatus, string> = {
 };
 
 export const SORTS: Record<ListingSort, string> = {
-  Newest: 'Newest',
+  Newest: 'Newest first',
   PriceAsc: 'Price: low to high',
   PriceDesc: 'Price: high to low',
-  PricePerM2Asc: '€/m²: low to high',
-  PricePerM2Desc: '€/m²: high to low',
+  PricePerM2Asc: 'Price per m²: lowest',
+  YearDesc: 'Year: newest',
+  MileageAsc: 'Mileage: lowest',
 };
 
 export const REPORT_REASONS: Record<ReportReason, string> = {
@@ -63,7 +62,7 @@ export const REPORT_REASONS: Record<ReportReason, string> = {
   Fraud: 'Looks like a scam',
   WrongInformation: 'Wrong price, photos or details',
   NoLongerAvailable: 'Already sold or rented',
-  Duplicate: 'Duplicate listing',
+  Duplicate: 'Duplicate ad',
   Offensive: 'Offensive content',
   Other: 'Something else',
 };
@@ -73,12 +72,20 @@ export function entries<K extends string>(map: Record<K, string>): { value: K; l
 }
 
 const eur = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+const num = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+
+export function formatNumber(n: number): string {
+  return num.format(n);
+}
+
+export function formatEur(n: number): string {
+  return eur.format(n);
+}
 
 export function formatPrice(price: number, deal: DealType): string {
   const amount = eur.format(price);
-  if (deal === 'RentMonthly') return `${amount} / month`;
-  if (deal === 'RentShortTerm') return `${amount} / night`;
-  return amount;
+  const unit = DEAL_UNIT[deal];
+  return unit ? `${amount} / ${unit}` : amount;
 }
 
 /** Compact price for map markers: 85k €, 1.2M €, 450 €. */
@@ -86,6 +93,11 @@ export function shortPrice(price: number): string {
   if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(1).replace('.0', '')}M €`;
   if (price >= 10_000) return `${Math.round(price / 1000)}k €`;
   return `${Math.round(price)} €`;
+}
+
+/** "Prizren" or "Marash, Prizren". */
+export function placeLabel(l: { municipality: string; place?: string | null }): string {
+  return l.place ? `${l.place}, ${l.municipality}` : l.municipality;
 }
 
 @Pipe({ name: 'price' })

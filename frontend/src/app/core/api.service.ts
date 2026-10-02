@@ -3,9 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AdminStats,
-  AgencyProfile,
   AuthResponse,
-  City,
+  BusinessKind,
+  BusinessProfile,
+  Category,
   Conversation,
   ListingDetail,
   ListingStatus,
@@ -13,6 +14,7 @@ import {
   ListingUpsert,
   MapPin,
   Message,
+  Municipality,
   Paged,
   Photo,
   Problem,
@@ -21,14 +23,19 @@ import {
   SavedSearch,
   SearchCriteria,
   User,
-  UserRole,
 } from './models';
 
-/** Drops empty values so the query string only carries filters that are set. */
+/** Drops empty values so the query string only carries filters that are set. Field filters become f.<key>. */
 export function toParams(values: object): HttpParams {
   let params = new HttpParams();
   for (const [key, value] of Object.entries(values)) {
     if (value === null || value === undefined || value === '') continue;
+    if (key === 'f' && typeof value === 'object') {
+      for (const [fk, fv] of Object.entries(value as Record<string, string>)) {
+        if (fv !== null && fv !== undefined && fv !== '') params = params.set(`f.${fk}`, String(fv));
+      }
+      continue;
+    }
     params = params.set(key, String(value));
   }
   return params;
@@ -57,8 +64,10 @@ export class Api {
     password: string;
     displayName: string;
     phone?: string | null;
-    role: UserRole;
-    agencyName?: string | null;
+    accountType: 'Personal' | 'Business';
+    businessName?: string | null;
+    businessKind?: BusinessKind | null;
+    municipality?: string | null;
   }) {
     return this.http.post<AuthResponse>('/api/auth/register', body);
   }
@@ -71,8 +80,15 @@ export class Api {
   updateMe(body: { displayName: string; phone?: string | null }) {
     return this.http.put<User>('/api/auth/me', body);
   }
-  updateMyAgency(body: { name: string; description?: string | null; website?: string | null; city?: string | null }) {
-    return this.http.put<AgencyProfile>('/api/me/agency', body);
+  updateMyBusiness(body: {
+    name: string;
+    kind: BusinessKind;
+    description?: string | null;
+    website?: string | null;
+    municipality?: string | null;
+    address?: string | null;
+  }) {
+    return this.http.put<BusinessProfile>('/api/me/business', body);
   }
 
   // Listings
@@ -86,6 +102,9 @@ export class Api {
   }
   listing(id: string) {
     return this.http.get<ListingDetail>(`/api/listings/${id}`);
+  }
+  similar(id: string) {
+    return this.http.get<ListingSummary[]>(`/api/listings/${id}/similar`);
   }
   phone(id: string) {
     return this.http.get<{ phone: string }>(`/api/listings/${id}/phone`);
@@ -165,22 +184,30 @@ export class Api {
   messages(conversationId: string) {
     return this.http.get<Message[]>(`/api/conversations/${conversationId}/messages`);
   }
+  requestBooking(listingId: string, body: { checkIn: string; checkOut: string; guests?: number | null; message?: string | null }) {
+    return this.http.post<Conversation>(`/api/listings/${listingId}/booking-requests`, body);
+  }
   reply(conversationId: string, body: string) {
     return this.http.post<Message>(`/api/conversations/${conversationId}/messages`, { body });
   }
 
-  // Agencies & meta
-  agencies() {
-    return this.http.get<AgencyProfile[]>('/api/agencies');
+  // Businesses & meta
+  businesses(kind?: BusinessKind | null) {
+    return this.http.get<BusinessProfile[]>('/api/businesses', { params: toParams({ kind }) });
   }
-  agency(slug: string) {
-    return this.http.get<AgencyProfile>(`/api/agencies/${slug}`);
+  business(slug: string) {
+    return this.http.get<BusinessProfile>(`/api/businesses/${slug}`);
   }
-  agencyListings(slug: string, page = 1) {
-    return this.http.get<Paged<ListingSummary>>(`/api/agencies/${slug}/listings`, { params: toParams({ page }) });
+  businessListings(slug: string, criteria: SearchCriteria = {}, page = 1) {
+    return this.http.get<Paged<ListingSummary>>(`/api/businesses/${slug}/listings`, {
+      params: toParams({ ...criteria, page, pageSize: 24 }),
+    });
   }
-  cities() {
-    return this.http.get<City[]>('/api/meta/cities');
+  categories() {
+    return this.http.get<Category[]>('/api/meta/categories');
+  }
+  locations() {
+    return this.http.get<Municipality[]>('/api/meta/locations');
   }
 
   // Admin

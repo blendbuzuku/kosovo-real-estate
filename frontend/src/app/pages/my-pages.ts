@@ -5,8 +5,9 @@ import { RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
 import { Auth } from '../core/auth';
 import { criteriaToParams } from '../core/criteria';
-import { LabelPipe, PricePipe, STATUS } from '../core/labels';
-import { ListingStatus, ListingSummary, SavedSearch } from '../core/models';
+import { BUSINESS_KINDS, LabelPipe, PricePipe, STATUS, entries, placeLabel } from '../core/labels';
+import { BusinessKind, ListingStatus, ListingSummary, SavedSearch } from '../core/models';
+import { Catalog } from '../core/catalog';
 import { ListingCard } from '../shared/listing-card';
 
 const RENEW_WINDOW_MS = 7 * 24 * 3600 * 1000;
@@ -17,8 +18,8 @@ const RENEW_WINDOW_MS = 7 * 24 * 3600 * 1000;
   template: `
     <div class="container">
       <div class="title-row">
-        <h1>My listings</h1>
-        <a class="btn" routerLink="/my-listings/new">+ Post a property</a>
+        <h1>My ads</h1>
+        <a class="btn" routerLink="/post">+ Post an ad</a>
       </div>
       <div class="tabs">
         @for (t of tabs; track t.label) {
@@ -42,7 +43,7 @@ const RENEW_WINDOW_MS = 7 * 24 * 3600 * 1000;
             </a>
             <div class="row-main">
               <a [routerLink]="['/listings', l.id]"><strong>{{ l.title }}</strong></a>
-              <div class="muted small">{{ l.priceEur | price: l.dealType }} · {{ l.city }}</div>
+              <div class="muted small">{{ l.priceEur | price: l.dealType }} · {{ place(l) }}</div>
               <div class="small">
                 <span class="status-pill" [attr.data-status]="l.status">{{ l.status | label: statuses }}</span>
                 @if (l.status === 'Active' && l.expiresAt) {
@@ -51,7 +52,7 @@ const RENEW_WINDOW_MS = 7 * 24 * 3600 * 1000;
               </div>
             </div>
             <div class="row-actions">
-              <a class="btn small ghost" [routerLink]="['/my-listings', l.id, 'edit']">Edit</a>
+              <a class="btn small ghost" [routerLink]="['/my-ads', l.id, 'edit']">Edit</a>
               @if (canRenew(l)) {
                 <button type="button" class="btn small" (click)="renew(l)">Renew 60 days</button>
               }
@@ -92,6 +93,10 @@ export class MyListingsPage {
 
   constructor() {
     this.reload();
+  }
+
+  protected place(l: ListingSummary) {
+    return placeLabel(l);
   }
 
   protected countFor(status: ListingStatus | null) {
@@ -141,8 +146,8 @@ export class MyListingsPage {
           </div>
         } @empty {
           <div class="card empty">
-            <p>You haven’t saved any listings yet. Tap the ♡ on a listing to keep it here.</p>
-            <a class="btn" routerLink="/">Start searching</a>
+            <p>You haven’t saved any ads yet. Tap the ♡ on an ad to keep it here.</p>
+            <a class="btn" routerLink="/search">Start searching</a>
           </div>
         }
       </div>
@@ -166,7 +171,7 @@ export class FavoritesPage {
       @for (s of searches(); track s.id) {
         <div class="card row-item">
           <div class="row-main">
-            <a routerLink="/" [queryParams]="params(s)"><strong>{{ s.name }}</strong></a>
+            <a routerLink="/search" [queryParams]="params(s)"><strong>{{ s.name }}</strong></a>
             <div class="muted small">Saved {{ s.createdAt | date: 'd MMM y' }}</div>
           </div>
           <div class="row-actions">
@@ -177,7 +182,7 @@ export class FavoritesPage {
       } @empty {
         <div class="card empty">
           <p>No saved searches. Set your filters on the search page and press “Save search”.</p>
-          <a class="btn" routerLink="/">Go to search</a>
+          <a class="btn" routerLink="/search">Go to search</a>
         </div>
       }
     </div>
@@ -208,7 +213,7 @@ export class SavedSearchesPage {
 
 @Component({
   selector: 'app-profile',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   template: `
     <div class="container narrow-page">
       <h1>Your profile</h1>
@@ -222,17 +227,34 @@ export class SavedSearchesPage {
         }
       </form>
 
-      @if (auth.user()?.agency; as agency) {
-        <form class="card" [formGroup]="agencyForm" (ngSubmit)="saveAgency()">
-          <h2>Agency page</h2>
-          <p class="muted small">Public at /agencies/{{ agency.slug }}</p>
-          <label class="stack"><span>Agency name</span><input formControlName="name" /></label>
-          <label class="stack"><span>City</span><input formControlName="city" /></label>
+      @if (auth.user()?.business; as business) {
+        <form class="card" [formGroup]="businessForm" (ngSubmit)="saveBusiness()">
+          <h2>Business page</h2>
+          <p class="muted small">Public at <a [routerLink]="['/businesses', business.slug]">/businesses/{{ business.slug }}</a></p>
+          <label class="stack"><span>Business name</span><input formControlName="name" /></label>
+          <label class="stack">
+            <span>Type of business</span>
+            <select formControlName="kind">
+              @for (k of kinds; track k.value) {
+                <option [value]="k.value">{{ k.label }}</option>
+              }
+            </select>
+          </label>
+          <label class="stack">
+            <span>Municipality</span>
+            <select formControlName="municipality">
+              <option value="">Choose…</option>
+              @for (m of catalog.locations(); track m.name) {
+                <option [value]="m.name">{{ m.name }}</option>
+              }
+            </select>
+          </label>
+          <label class="stack"><span>Address</span><input formControlName="address" /></label>
           <label class="stack"><span>Website</span><input type="url" formControlName="website" placeholder="https://" /></label>
           <label class="stack"><span>About</span><textarea rows="4" formControlName="description"></textarea></label>
-          <button class="btn" type="submit" [disabled]="agencyForm.invalid">Save agency</button>
-          @if (agencyMessage()) {
-            <p class="notice">{{ agencyMessage() }}</p>
+          <button class="btn" type="submit" [disabled]="businessForm.invalid">Save business page</button>
+          @if (businessMessage()) {
+            <p class="notice">{{ businessMessage() }}</p>
           }
         </form>
       }
@@ -244,18 +266,22 @@ export class ProfilePage {
   protected readonly auth = inject(Auth);
   private readonly fb = inject(FormBuilder);
   protected readonly profileMessage = signal<string | null>(null);
-  protected readonly agencyMessage = signal<string | null>(null);
+  protected readonly businessMessage = signal<string | null>(null);
+  protected readonly catalog = inject(Catalog);
+  protected readonly kinds = entries(BUSINESS_KINDS);
 
   protected readonly profile = this.fb.nonNullable.group({
     displayName: [this.auth.user()?.displayName ?? '', [Validators.required, Validators.minLength(2)]],
     phone: [this.auth.user()?.phone ?? ''],
   });
 
-  protected readonly agencyForm = this.fb.nonNullable.group({
-    name: [this.auth.user()?.agency?.name ?? '', Validators.required],
-    city: [this.auth.user()?.agency?.city ?? ''],
-    website: [this.auth.user()?.agency?.website ?? ''],
-    description: [this.auth.user()?.agency?.description ?? ''],
+  protected readonly businessForm = this.fb.nonNullable.group({
+    name: [this.auth.user()?.business?.name ?? '', Validators.required],
+    kind: [(this.auth.user()?.business?.kind ?? 'Other') as BusinessKind],
+    municipality: [this.auth.user()?.business?.municipality ?? ''],
+    address: [this.auth.user()?.business?.address ?? ''],
+    website: [this.auth.user()?.business?.website ?? ''],
+    description: [this.auth.user()?.business?.description ?? ''],
   });
 
   protected saveProfile() {
@@ -269,16 +295,23 @@ export class ProfilePage {
     });
   }
 
-  protected saveAgency() {
-    const v = this.agencyForm.getRawValue();
+  protected saveBusiness() {
+    const v = this.businessForm.getRawValue();
     this.api
-      .updateMyAgency({ name: v.name, city: v.city || null, website: v.website || null, description: v.description || null })
+      .updateMyBusiness({
+        name: v.name,
+        kind: v.kind,
+        municipality: v.municipality || null,
+        address: v.address || null,
+        website: v.website || null,
+        description: v.description || null,
+      })
       .subscribe({
         next: () => {
           this.api.me().subscribe((u) => this.auth.updateUser(u));
-          this.agencyMessage.set('Saved.');
+          this.businessMessage.set('Saved.');
         },
-        error: (e) => this.agencyMessage.set(errorMessage(e)),
+        error: (e) => this.businessMessage.set(errorMessage(e)),
       });
   }
 }

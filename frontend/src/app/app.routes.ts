@@ -2,10 +2,15 @@ import { Routes } from '@angular/router';
 import { requireAuth } from './core/auth';
 
 export const routes: Routes = [
-  { path: '', title: 'Prona · Homes in Kosovo', loadComponent: () => import('./pages/search').then((m) => m.SearchPage) },
+  {
+    path: '',
+    title: 'Prona · Buy, rent and book anything in Kosovo',
+    loadComponent: () => import('./pages/home').then((m) => m.HomePage),
+  },
+  { path: 'search', title: 'Search · Prona', loadComponent: () => import('./pages/search').then((m) => m.SearchPage) },
   {
     path: 'listings/:id',
-    title: 'Listing · Prona',
+    title: 'Ad · Prona',
     loadComponent: () => import('./pages/listing-detail').then((m) => m.ListingDetailPage),
   },
   { path: 'login', title: 'Log in · Prona', loadComponent: () => import('./pages/auth-pages').then((m) => m.LoginPage) },
@@ -14,25 +19,33 @@ export const routes: Routes = [
     title: 'Create account · Prona',
     loadComponent: () => import('./pages/auth-pages').then((m) => m.RegisterPage),
   },
-  { path: 'agencies', title: 'Agencies · Prona', loadComponent: () => import('./pages/agency').then((m) => m.AgenciesPage) },
-  { path: 'agencies/:slug', title: 'Agency · Prona', loadComponent: () => import('./pages/agency').then((m) => m.AgencyPage) },
   {
-    path: 'my-listings',
-    title: 'My listings · Prona',
-    canActivate: [requireAuth('Owner', 'Agency', 'Admin')],
+    path: 'businesses',
+    title: 'Businesses · Prona',
+    loadComponent: () => import('./pages/businesses').then((m) => m.BusinessesPage),
+  },
+  {
+    path: 'businesses/:slug',
+    title: 'Business · Prona',
+    loadComponent: () => import('./pages/businesses').then((m) => m.BusinessPage),
+  },
+  {
+    path: 'post',
+    title: 'Post an ad · Prona',
+    canActivate: [requireAuth()],
+    loadComponent: () => import('./pages/post-wizard').then((m) => m.PostWizardPage),
+  },
+  {
+    path: 'my-ads',
+    title: 'My ads · Prona',
+    canActivate: [requireAuth()],
     loadComponent: () => import('./pages/my-pages').then((m) => m.MyListingsPage),
   },
   {
-    path: 'my-listings/new',
-    title: 'Post a property · Prona',
-    canActivate: [requireAuth('Owner', 'Agency', 'Admin')],
-    loadComponent: () => import('./pages/listing-editor').then((m) => m.ListingEditorPage),
-  },
-  {
-    path: 'my-listings/:id/edit',
-    title: 'Edit listing · Prona',
-    canActivate: [requireAuth('Owner', 'Agency', 'Admin')],
-    loadComponent: () => import('./pages/listing-editor').then((m) => m.ListingEditorPage),
+    path: 'my-ads/:id/edit',
+    title: 'Edit ad · Prona',
+    canActivate: [requireAuth()],
+    loadComponent: () => import('./pages/post-wizard').then((m) => m.PostWizardPage),
   },
   {
     path: 'favorites',
@@ -70,5 +83,10 @@ export const routes: Routes = [
     canActivate: [requireAuth('Admin')],
     loadComponent: () => import('./pages/admin').then((m) => m.AdminPage),
   },
+  // Old addresses from the first version.
+  { path: 'agencies', redirectTo: 'businesses' },
+  { path: 'agencies/:slug', redirectTo: 'businesses/:slug' },
+  { path: 'my-listings', redirectTo: 'my-ads' },
+  { path: 'my-listings/new', redirectTo: 'post' },
   { path: '**', redirectTo: '' },
 ];

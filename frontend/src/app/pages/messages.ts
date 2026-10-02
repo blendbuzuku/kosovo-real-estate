@@ -5,10 +5,12 @@ import { RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
 import { Conversation, Message } from '../core/models';
 import { Unread } from '../core/stores';
+import { formatEur } from '../core/labels';
+import { Icon } from '../shared/icon';
 
 @Component({
   selector: 'app-messages',
-  imports: [RouterLink, DatePipe, FormsModule],
+  imports: [RouterLink, DatePipe, FormsModule, Icon],
   template: `
     <div class="container">
       <h1>Messages</h1>
@@ -21,7 +23,7 @@ import { Unread } from '../core/stores';
                   <strong>{{ c.otherPartyName }}</strong>
                   <span class="muted small">{{ c.lastMessageAt | date: 'd MMM, HH:mm' }}</span>
                 </div>
-                <div class="small">{{ c.iAmOwner ? 'About your listing: ' : '' }}{{ c.listingTitle }}</div>
+                <div class="small">{{ c.iAmOwner ? 'About your ad: ' : '' }}{{ c.listingTitle }}</div>
                 <div class="muted small ellipsis">{{ c.lastMessage }}</div>
                 @if (c.unreadCount) {
                   <span class="unread">{{ c.unreadCount }}</span>
@@ -29,7 +31,7 @@ import { Unread } from '../core/stores';
               </a>
             </li>
           } @empty {
-            <li class="muted pad">No conversations yet. Message an owner from any listing page.</li>
+            <li class="muted pad">No conversations yet. Message a seller or request dates from any ad.</li>
           }
         </ul>
 
@@ -42,8 +44,15 @@ import { Unread } from '../core/stores';
             </div>
             <div class="bubbles" #scroller>
               @for (m of messages(); track m.id) {
-                <div class="bubble" [class.mine]="m.isMine">
-                  <p>{{ m.body }}</p>
+                <div class="bubble" [class.mine]="m.isMine" [class.booking]="!!m.booking">
+                  @if (m.booking; as b) {
+                    <div class="booking-card">
+                      <strong><app-icon name="calendar" [size]="16" /> Booking request</strong>
+                      <span>{{ b.from | date: 'EEE d MMM' }} → {{ b.to | date: 'EEE d MMM y' }}</span>
+                      <span>{{ b.units }} {{ b.guests !== null && b.guests !== undefined ? 'nights · ' + b.guests + ' guests' : 'days' }} · {{ eur(b.totalEur) }}</span>
+                    </div>
+                  }
+                  <p>{{ m.booking ? stripSummary(m.body) : m.body }}</p>
                   <span class="small muted">{{ m.sentAt | date: 'd MMM, HH:mm' }}</span>
                 </div>
               }
@@ -88,6 +97,15 @@ export class MessagesPage {
       const el = this.scroller()?.nativeElement;
       if (el) setTimeout(() => (el.scrollTop = el.scrollHeight));
     });
+  }
+
+  protected eur(n: number) {
+    return formatEur(n);
+  }
+
+  /** The first line of a booking message repeats the card above it. */
+  protected stripSummary(body: string) {
+    return body.replace(/^Booking request:[^\n]*\n*/, '');
   }
 
   protected onEnter(event: Event) {

@@ -2,7 +2,8 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
-import { LEGALIZATION, LabelPipe, PricePipe, REPORT_REASONS, STATUS } from '../core/labels';
+import { LabelPipe, PricePipe, REPORT_REASONS, STATUS, placeLabel } from '../core/labels';
+import { Catalog } from '../core/catalog';
 import { AdminStats, ListingSummary, Report } from '../core/models';
 
 @Component({
@@ -17,7 +18,7 @@ import { AdminStats, ListingSummary, Report } from '../core/models';
           <div class="card stat"><strong>{{ s.openReports }}</strong><span>open reports</span></div>
           <div class="card stat"><strong>{{ s.active }}</strong><span>live listings</span></div>
           <div class="card stat"><strong>{{ s.users }}</strong><span>users</span></div>
-          <div class="card stat"><strong>{{ s.agencies }}</strong><span>agencies</span></div>
+          <div class="card stat"><strong>{{ s.businesses }}</strong><span>businesses</span></div>
         </div>
       }
       <div class="tabs">
@@ -41,9 +42,9 @@ import { AdminStats, ListingSummary, Report } from '../core/models';
             <div class="row-main">
               <a [routerLink]="['/listings', l.id]" target="_blank"><strong>{{ l.title }}</strong></a>
               <div class="muted small">
-                {{ l.priceEur | price: l.dealType }} · {{ l.areaM2 }} m² · {{ l.city }} · {{ l.photoCount }} photos
+                {{ categoryName(l.category) }} · {{ l.priceEur | price: l.dealType }} · {{ place(l) }} · {{ l.photoCount }} photos
               </div>
-              <div class="small">Legal: {{ l.legalization | label: legalization }}</div>
+              <div class="small">{{ facts(l) }}</div>
             </div>
             <div class="row-actions column">
               <button type="button" class="btn small" (click)="approve(l)">Approve</button>
@@ -83,7 +84,7 @@ import { AdminStats, ListingSummary, Report } from '../core/models';
 })
 export class AdminPage {
   private readonly api = inject(Api);
-  protected readonly legalization = LEGALIZATION;
+  private readonly catalog = inject(Catalog);
   protected readonly reasons = REPORT_REASONS;
   protected readonly statuses = STATUS;
   protected readonly tab = signal<'queue' | 'reports'>('queue');
@@ -95,6 +96,18 @@ export class AdminPage {
 
   constructor() {
     this.reload();
+  }
+
+  protected categoryName(key: string) {
+    return this.catalog.category(key)?.name ?? key;
+  }
+
+  protected place(l: ListingSummary) {
+    return placeLabel(l);
+  }
+
+  protected facts(l: ListingSummary) {
+    return this.catalog.cardFacts(l).join(' · ');
   }
 
   protected approve(l: ListingSummary) {

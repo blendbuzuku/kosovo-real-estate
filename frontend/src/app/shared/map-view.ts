@@ -34,6 +34,8 @@ export class MapView implements OnDestroy {
   private pinLayer = L.layerGroup();
   private singleMarker?: L.Marker;
   private suppressMoveEvent = false;
+  /** Until the user pans or zooms, the map follows the pins. */
+  private userMoved = false;
 
   constructor() {
     afterNextRender(() => this.init());
@@ -70,6 +72,7 @@ export class MapView implements OnDestroy {
         this.suppressMoveEvent = false;
         return;
       }
+      this.userMoved = true;
       const b = map.getBounds();
       this.boundsChange.emit(
         [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map((v) => v.toFixed(5)).join(','),
@@ -83,7 +86,12 @@ export class MapView implements OnDestroy {
     this.drawPins(this.pins());
     this.drawMarker(this.marker());
     // The host may have been sized after Leaflet measured it.
-    setTimeout(() => map.invalidateSize(), 0);
+    setTimeout(() => {
+      this.suppressMoveEvent = true;
+      map.invalidateSize();
+      this.suppressMoveEvent = false;
+      this.fitToPins(this.pins());
+    }, 0);
   }
 
   private moveTo(lat: number, lng: number, zoom?: number) {
@@ -103,6 +111,14 @@ export class MapView implements OnDestroy {
         .on('click', () => this.pinClick.emit(p.id))
         .addTo(this.pinLayer);
     }
+    this.fitToPins(pins);
+  }
+
+  private fitToPins(pins: MapPin[]) {
+    if (!this.map || this.userMoved || !pins.length || this.picker() || this.marker()) return;
+    this.suppressMoveEvent = true;
+    this.map.fitBounds(L.latLngBounds(pins.map((p) => [p.lat, p.lng] as L.LatLngTuple)).pad(0.15), { maxZoom: 14, animate: false });
+    this.suppressMoveEvent = false;
   }
 
   private drawMarker(m: { lat: number; lng: number } | null) {

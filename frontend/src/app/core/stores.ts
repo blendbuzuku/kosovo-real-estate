@@ -1,24 +1,6 @@
 import { Injectable, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, shareReplay } from 'rxjs';
 import { Api } from './api.service';
 import { Auth } from './auth';
-import { City } from './models';
-
-/** Kosovo cities and neighbourhoods, fetched once. */
-@Injectable({ providedIn: 'root' })
-export class Cities {
-  private readonly api = inject(Api);
-  private readonly cities$ = this.api.cities().pipe(
-    catchError(() => of([] as City[])),
-    shareReplay(1),
-  );
-  readonly all = toSignal(this.cities$, { initialValue: [] as City[] });
-
-  find(name: string | null | undefined): City | undefined {
-    return this.all().find((c) => c.name === name);
-  }
-}
 
 /** Ids of the user's favourites, so every card can show a filled heart without extra requests. */
 @Injectable({ providedIn: 'root' })

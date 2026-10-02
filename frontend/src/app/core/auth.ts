@@ -32,10 +32,6 @@ export class Auth {
   readonly user = computed(() => this.state()?.user ?? null);
   readonly token = computed(() => this.state()?.token ?? null);
   readonly isLoggedIn = computed(() => this.state() !== null);
-  readonly canPost = computed(() => {
-    const role = this.user()?.role;
-    return role === 'Owner' || role === 'Agency' || role === 'Admin';
-  });
   readonly isAdmin = computed(() => this.user()?.role === 'Admin');
 
   login(email: string, password: string): Observable<AuthResponse> {

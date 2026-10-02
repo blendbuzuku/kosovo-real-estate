@@ -1,20 +1,12 @@
-// Mirrors the API's DTOs (backend/src/RealEstate.Api/Features/**/…Dtos.cs).
+// Mirrors the API's DTOs (backend/src/RealEstate.Api/Features/**).
 
-export type UserRole = 'Seeker' | 'Owner' | 'Agency' | 'Admin';
-export type PropertyType = 'Apartment' | 'House' | 'Land' | 'Commercial';
-export type DealType = 'Sale' | 'RentMonthly' | 'RentShortTerm';
-export type HeatingType =
-  | 'None'
-  | 'District'
-  | 'Central'
-  | 'Electric'
-  | 'HeatPump'
-  | 'AirConditioning'
-  | 'Wood'
-  | 'Other';
+export type UserRole = 'Member' | 'Business' | 'Admin';
+export type BusinessKind = 'RealEstateAgency' | 'Developer' | 'CarDealer' | 'RentACar' | 'Other';
+export type DealType = 'Sale' | 'RentMonthly' | 'RentNightly' | 'RentDaily';
 export type ListingStatus = 'Draft' | 'PendingReview' | 'Active' | 'Rejected' | 'Expired' | 'Archived';
-export type LegalizationStatus = 'Unknown' | 'Legalized' | 'InProcess' | 'NotLegalized' | 'NotRequired';
-export type ListingSort = 'Newest' | 'PriceAsc' | 'PriceDesc' | 'PricePerM2Asc' | 'PricePerM2Desc';
+export type SellerType = 'Private' | 'Business';
+export type ListingSort = 'Newest' | 'PriceAsc' | 'PriceDesc' | 'PricePerM2Asc' | 'YearDesc' | 'MileageAsc';
+export type Vertical = 'property' | 'vehicles';
 export type ReportReason =
   | 'Spam'
   | 'Fraud'
@@ -25,13 +17,70 @@ export type ReportReason =
   | 'Other';
 export type ReportStatus = 'Open' | 'Dismissed' | 'ListingRemoved';
 
-export interface Agency {
+// ---------- Categories (from /api/meta/categories) ----------
+
+export type FieldType = 'Number' | 'Integer' | 'Year' | 'Select' | 'Boolean' | 'Text';
+export type FilterKind = 'None' | 'Range' | 'Min' | 'Exact' | 'Multi' | 'Contains';
+
+export interface FieldOption {
+  value: string;
+  label: string;
+}
+
+export interface FieldDef {
+  key: string;
+  label: string;
+  type: FieldType;
+  unit?: string | null;
+  required: boolean;
+  filter: FilterKind;
+  onCard: boolean;
+  group: string;
+  options?: FieldOption[] | null;
+  onlyFor?: DealType[] | null;
+  min?: number | null;
+  max?: number | null;
+  help?: string | null;
+}
+
+export interface Category {
+  key: string;
+  name: string;
+  vertical: Vertical;
+  icon: string;
+  deals: DealType[];
+  fields: FieldDef[];
+  live: { deal: DealType; count: number }[];
+}
+
+export type AttributeValue = string | number | boolean;
+export type Attributes = Record<string, AttributeValue>;
+
+// ---------- Locations (from /api/meta/locations) ----------
+
+export interface Place {
+  name: string;
+  kind: 'neighbourhood' | 'village';
+}
+
+export interface Municipality {
+  name: string;
+  lat: number;
+  lng: number;
+  places: Place[];
+}
+
+// ---------- Accounts ----------
+
+export interface Business {
   id: string;
   slug: string;
   name: string;
+  kind: BusinessKind;
   description?: string | null;
   website?: string | null;
-  city?: string | null;
+  municipality?: string | null;
+  address?: string | null;
 }
 
 export interface User {
@@ -40,7 +89,7 @@ export interface User {
   displayName: string;
   phone?: string | null;
   role: UserRole;
-  agency?: Agency | null;
+  business?: Business | null;
 }
 
 export interface AuthResponse {
@@ -48,6 +97,14 @@ export interface AuthResponse {
   expiresAt: string;
   user: User;
 }
+
+export interface BusinessProfile extends Business {
+  phone?: string | null;
+  activeListings: number;
+  memberSince: string;
+}
+
+// ---------- Listings ----------
 
 export interface Paged<T> {
   items: T[];
@@ -57,53 +114,47 @@ export interface Paged<T> {
 }
 
 export interface SearchCriteria {
+  vertical?: Vertical | null;
+  category?: string | null;
   dealType?: DealType | null;
-  propertyType?: PropertyType | null;
-  city?: string | null;
-  neighborhood?: string | null;
+  municipality?: string | null;
+  place?: string | null;
   q?: string | null;
   minPrice?: number | null;
   maxPrice?: number | null;
-  minArea?: number | null;
-  maxArea?: number | null;
-  minRooms?: number | null;
-  maxRooms?: number | null;
-  minFloor?: number | null;
-  maxFloor?: number | null;
-  minYearBuilt?: number | null;
-  heating?: HeatingType | null;
-  hasParking?: boolean | null;
-  isFurnished?: boolean | null;
-  hasElevator?: boolean | null;
-  legalizedOnly?: boolean | null;
-  hasCadastreCertificate?: boolean | null;
-  hasConstructionPermit?: boolean | null;
+  seller?: SellerType | null;
   lat?: number | null;
   lng?: number | null;
   radiusKm?: number | null;
   bbox?: string | null;
-  sort?: ListingSort;
+  sort?: ListingSort | null;
+  /** Category field filters keyed like the query string: "rooms.min", "fuel", "parking". */
+  f?: Record<string, string> | null;
+}
+
+export interface Seller {
+  name: string;
+  isBusiness: boolean;
+  kind?: BusinessKind | null;
+  slug?: string | null;
 }
 
 export interface ListingSummary {
   id: string;
-  title: string;
-  propertyType: PropertyType;
+  category: string;
   dealType: DealType;
+  title: string;
   priceEur: number;
-  areaM2: number;
+  negotiable: boolean;
   pricePerM2?: number | null;
-  rooms?: number | null;
-  floor?: number | null;
-  city: string;
-  neighborhood?: string | null;
+  municipality: string;
+  place?: string | null;
   lat: number;
   lng: number;
   thumbnailUrl?: string | null;
   photoCount: number;
-  legalization: LegalizationStatus;
-  hasCadastreCertificate?: boolean | null;
-  agencyName?: string | null;
+  attributes: Attributes;
+  seller: Seller;
   status: ListingStatus;
   publishedAt?: string | null;
   expiresAt?: string | null;
@@ -115,7 +166,7 @@ export interface MapPin {
   lng: number;
   priceEur: number;
   dealType: DealType;
-  propertyType: PropertyType;
+  category: string;
 }
 
 export interface Photo {
@@ -126,47 +177,33 @@ export interface Photo {
   height: number;
 }
 
-export interface LegalStatus {
-  hasConstructionPermit?: boolean | null;
-  hasCadastreCertificate?: boolean | null;
-  legalization: LegalizationStatus;
-  notes?: string | null;
+export interface ListingOwner {
+  id: string;
+  displayName: string;
+  hasPhone: boolean;
+  memberSince: string;
+  businessSlug?: string | null;
+  businessName?: string | null;
+  businessKind?: BusinessKind | null;
 }
 
 export interface ListingDetail {
   id: string;
+  category: string;
+  dealType: DealType;
   title: string;
   description: string;
-  propertyType: PropertyType;
-  dealType: DealType;
   priceEur: number;
-  areaM2: number;
+  negotiable: boolean;
   pricePerM2?: number | null;
-  rooms?: number | null;
-  bathrooms?: number | null;
-  floor?: number | null;
-  totalFloors?: number | null;
-  yearBuilt?: number | null;
-  heating: HeatingType;
-  hasParking: boolean;
-  isFurnished: boolean;
-  hasElevator: boolean;
-  hasBalcony: boolean;
-  city: string;
-  neighborhood?: string | null;
+  attributes: Attributes;
+  municipality: string;
+  place?: string | null;
   address?: string | null;
   lat: number;
   lng: number;
-  legal: LegalStatus;
   photos: Photo[];
-  owner: {
-    id: string;
-    displayName: string;
-    isAgency: boolean;
-    agencySlug?: string | null;
-    agencyName?: string | null;
-    hasPhone: boolean;
-  };
+  owner: ListingOwner;
   status: ListingStatus;
   moderationNote?: string | null;
   createdAt: string;
@@ -179,35 +216,18 @@ export interface ListingDetail {
 }
 
 export interface ListingUpsert {
+  category: string;
+  dealType: DealType;
   title: string;
   description: string;
-  propertyType: PropertyType;
-  dealType: DealType;
   priceEur: number;
-  areaM2: number;
-  rooms?: number | null;
-  bathrooms?: number | null;
-  floor?: number | null;
-  totalFloors?: number | null;
-  yearBuilt?: number | null;
-  heating: HeatingType;
-  hasParking: boolean;
-  isFurnished: boolean;
-  hasElevator: boolean;
-  hasBalcony: boolean;
-  city: string;
-  neighborhood?: string | null;
+  negotiable: boolean;
+  municipality: string;
+  place?: string | null;
   address?: string | null;
-  lat: number;
-  lng: number;
-  legal: LegalStatus;
-}
-
-export interface City {
-  name: string;
-  lat: number;
-  lng: number;
-  neighborhoods: string[];
+  lat?: number | null;
+  lng?: number | null;
+  attributes: Attributes;
 }
 
 export interface SavedSearch {
@@ -217,6 +237,8 @@ export interface SavedSearch {
   emailAlerts: boolean;
   createdAt: string;
 }
+
+// ---------- Messaging ----------
 
 export interface Conversation {
   id: string;
@@ -229,6 +251,14 @@ export interface Conversation {
   iAmOwner: boolean;
 }
 
+export interface Booking {
+  from: string;
+  to: string;
+  guests?: number | null;
+  units: number;
+  totalEur: number;
+}
+
 export interface Message {
   id: string;
   senderId: string;
@@ -236,19 +266,10 @@ export interface Message {
   sentAt: string;
   isMine: boolean;
   readAt?: string | null;
+  booking?: Booking | null;
 }
 
-export interface AgencyProfile {
-  id: string;
-  slug: string;
-  name: string;
-  description?: string | null;
-  website?: string | null;
-  city?: string | null;
-  phone?: string | null;
-  activeListings: number;
-  memberSince: string;
-}
+// ---------- Moderation ----------
 
 export interface Report {
   id: string;
@@ -268,7 +289,7 @@ export interface AdminStats {
   active: number;
   openReports: number;
   users: number;
-  agencies: number;
+  businesses: number;
 }
 
 /** RFC 7807 problem details as returned by the API. */

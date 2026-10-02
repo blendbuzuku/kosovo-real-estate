@@ -1,39 +1,57 @@
 <header class="site-header">
   <div class="container header-inner">
-    <a routerLink="/" class="brand" (click)="menuOpen.set(false)">
-      <span class="logo" aria-hidden="true">P</span> Prona
+    <a routerLink="/" class="brand" aria-label="Prona home">
+      <span class="logo" aria-hidden="true">P</span>
+      <span>Prona</span>
     </a>
-    <button type="button" class="menu-toggle" [attr.aria-expanded]="menuOpen()" aria-label="Menu" (click)="menuOpen.set(!menuOpen())">
-      ☰
-    </button>
-    <nav class="nav" [class.open]="menuOpen()" (click)="menuOpen.set(false)">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Search</a>
-      <a routerLink="/agencies" routerLinkActive="active">Agencies</a>
+    <nav class="main-nav" aria-label="Main">
+      <a routerLink="/search" [queryParams]="{ vertical: 'property' }" routerLinkActive="active">Property</a>
+      <a routerLink="/search" [queryParams]="{ dealType: 'RentNightly' }">Stays</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'vehicles' }">Vehicles</a>
+      <a routerLink="/businesses" routerLinkActive="active">Businesses</a>
+    </nav>
+    <span class="spacer"></span>
+    <div class="header-actions">
       @if (auth.user(); as user) {
-        <a routerLink="/favorites" routerLinkActive="active">Favorites</a>
-        <a routerLink="/saved-searches" routerLinkActive="active">Alerts</a>
-        <a routerLink="/messages" routerLinkActive="active">
-          Messages
+        <a class="icon-link" routerLink="/favorites" routerLinkActive="active" aria-label="Favorites" title="Favorites">
+          <app-icon name="heart" />
+        </a>
+        <a class="icon-link" routerLink="/messages" routerLinkActive="active" aria-label="Messages" title="Messages">
+          <app-icon name="chat" />
           @if (unread.count()) {
             <span class="badge-count">{{ unread.count() }}</span>
           }
         </a>
-        @if (auth.canPost()) {
-          <a routerLink="/my-listings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">My listings</a>
-        }
-        @if (auth.isAdmin()) {
-          <a routerLink="/admin" routerLinkActive="active">Moderation</a>
-        }
-        <a routerLink="/profile" routerLinkActive="active" class="user">{{ user.displayName }}</a>
-        <button type="button" class="link" (click)="logout()">Log out</button>
-        @if (auth.canPost()) {
-          <a routerLink="/my-listings/new" class="btn small">+ Post</a>
-        }
+        <div class="account-menu">
+          <button type="button" class="avatar-btn" [attr.aria-expanded]="menuOpen()" aria-label="Account menu" (click)="toggleMenu($event)">
+            <span class="avatar">{{ (user.business?.name ?? user.displayName).charAt(0) }}</span>
+          </button>
+          @if (menuOpen()) {
+            <div class="menu card" role="menu">
+              <div class="menu-head">
+                <strong>{{ user.displayName }}</strong>
+                <span class="muted small">{{ user.business?.name ?? user.email }}</span>
+              </div>
+              <a routerLink="/my-ads" role="menuitem"><app-icon name="list" [size]="18" /> My ads</a>
+              <a routerLink="/messages" role="menuitem"><app-icon name="chat" [size]="18" /> Messages</a>
+              <a routerLink="/favorites" role="menuitem"><app-icon name="heart" [size]="18" /> Favorites</a>
+              <a routerLink="/saved-searches" role="menuitem"><app-icon name="bell" [size]="18" /> Saved searches</a>
+              @if (user.business; as b) {
+                <a [routerLink]="['/businesses', b.slug]" role="menuitem"><app-icon name="briefcase" [size]="18" /> My business page</a>
+              }
+              <a routerLink="/profile" role="menuitem"><app-icon name="user" [size]="18" /> Profile</a>
+              @if (auth.isAdmin()) {
+                <a routerLink="/admin" role="menuitem"><app-icon name="shield" [size]="18" /> Moderation</a>
+              }
+              <button type="button" role="menuitem" (click)="logout()"><app-icon name="logout" [size]="18" /> Log out</button>
+            </div>
+          }
+        </div>
       } @else {
-        <a routerLink="/login" routerLinkActive="active">Log in</a>
-        <a routerLink="/register" class="btn small">Post a property</a>
+        <a class="btn ghost small login-link" routerLink="/login">Log in</a>
       }
-    </nav>
+      <a class="btn small post-btn" routerLink="/post"><app-icon name="plus" [size]="18" /> <span>Post an ad</span></a>
+    </div>
   </div>
 </header>
 
@@ -42,8 +60,46 @@
 </main>
 
 <footer class="site-footer">
-  <div class="container">
-    <span>© Prona · Real estate in Kosovo</span>
-    <span class="muted">Legal status is declared by the poster. Verify documents with a notary before you pay.</span>
+  <div class="container footer-grid">
+    <div>
+      <a routerLink="/" class="brand"><span class="logo" aria-hidden="true">P</span> Prona</a>
+      <p class="muted small">Homes, stays, land, cars and rentals across all 38 municipalities of Kosovo.</p>
+    </div>
+    <div>
+      <strong>Property</strong>
+      <a routerLink="/search" [queryParams]="{ vertical: 'property', dealType: 'Sale' }">Buy a home</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'property', dealType: 'RentMonthly' }">Rent a home</a>
+      <a routerLink="/search" [queryParams]="{ dealType: 'RentNightly' }">Stays per night</a>
+      <a routerLink="/search" [queryParams]="{ category: 'land' }">Land</a>
+    </div>
+    <div>
+      <strong>Vehicles</strong>
+      <a routerLink="/search" [queryParams]="{ category: 'cars', dealType: 'Sale' }">Cars for sale</a>
+      <a routerLink="/search" [queryParams]="{ vertical: 'vehicles', dealType: 'RentDaily' }">Rent a car</a>
+      <a routerLink="/search" [queryParams]="{ category: 'motorcycles' }">Motorcycles</a>
+      <a routerLink="/search" [queryParams]="{ category: 'vans-trucks' }">Vans &amp; trucks</a>
+    </div>
+    <div>
+      <strong>Prona</strong>
+      <a routerLink="/businesses">Businesses</a>
+      <a routerLink="/post">Post an ad</a>
+      <a routerLink="/register">Create an account</a>
+    </div>
+  </div>
+  <div class="container footer-note muted small">
+    © Prona · Legal status and customs status are declared by the poster. Check documents with a notary before you pay.
   </div>
 </footer>
+
+<nav class="tabbar" aria-label="Quick navigation">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><app-icon name="home" /><span>Home</span></a>
+  <a routerLink="/search" routerLinkActive="active"><app-icon name="search" /><span>Search</span></a>
+  <a routerLink="/post" routerLinkActive="active" class="tab-post"><app-icon name="plus" [size]="26" [stroke]="2.2" /><span>Post</span></a>
+  <a routerLink="/messages" routerLinkActive="active">
+    <app-icon name="chat" /><span>Messages</span>
+    @if (unread.count()) {
+      <span class="badge-count">{{ unread.count() }}</span>
+    }
+  </a>
+  <a [routerLink]="auth.isLoggedIn() ? '/my-ads' : '/login'" routerLinkActive="active"><app-icon name="user" /><span>{{ auth.isLoggedIn() ? 'My ads' : 'Log in' }}</span></a>
+</nav>
