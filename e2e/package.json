@@ -1,0 +1,12 @@
+{
+  "name": "prona-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "api": "node api.mjs",
+    "ui": "node ui.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
