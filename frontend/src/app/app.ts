@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
+import { Api } from './core/api.service';
 import { Auth } from './core/auth';
 import { Unread } from './core/stores';
 import { BRAND } from './core/brand';
@@ -25,6 +26,8 @@ export class App {
 
   constructor() {
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => this.menuOpen.set(false));
+    // A saved login can outlive its account (for example after a database reset); check it once on load.
+    if (this.auth.isLoggedIn()) inject(Api).me().subscribe({ next: (u) => this.auth.updateUser(u), error: () => {} });
   }
 
   protected toggleMenu(e: Event) {

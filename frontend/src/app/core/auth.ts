@@ -78,6 +78,7 @@ export class Auth {
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(Auth);
+  const router = inject(Router);
   const token = auth.token();
   if (token && req.url.startsWith('/api/')) {
     req = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
@@ -85,7 +86,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     tap({
       error: (err) => {
-        if (err?.status === 401 && token) auth.logout();
+        if (err?.status !== 401 || !token || auth.token() !== token) return;
+        auth.logout();
+        // The session ended (account gone or token expired). Background reads stay quiet;
+        // an action like posting an ad sends the user to log in and come back.
+        if (req.method !== 'GET') {
+          router.navigate(['/login'], { queryParams: { returnUrl: router.url, expired: 1 } });
+        }
       },
     }),
   );

@@ -14,6 +14,9 @@ import { BusinessKind } from '../core/models';
     <div class="container narrow-page">
       <form class="card auth-card" [formGroup]="form" (ngSubmit)="submit()">
         <h1>Log in</h1>
+        @if (expired()) {
+          <p class="notice">Your session ended. Log in again to carry on.</p>
+        }
         <label class="stack"><span>Email</span><input type="email" formControlName="email" autocomplete="email" /></label>
         <label class="stack">
           <span>Password</span><input type="password" formControlName="password" autocomplete="current-password" />
@@ -29,6 +32,7 @@ import { BusinessKind } from '../core/models';
 })
 export class LoginPage {
   readonly returnUrl = input<string>('/');
+  readonly expired = input<string>();
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
   protected readonly busy = signal(false);

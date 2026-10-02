@@ -1,4 +1,5 @@
 using System.Net;
+using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using RealEstate.Api.Domain;
 using RealEstate.Api.Features.Accounts;
@@ -82,6 +83,16 @@ public class ListingFlowTests(ApiFactory factory) : IClassFixture<ApiFactory>
             .Read<ListingDetailDto>();
         Assert.Equal(ListingStatus.PendingReview, edited.Status);
         Assert.Equal(79_000, edited.PriceEur);
+    }
+
+    [Fact]
+    public async Task Token_for_an_account_that_no_longer_exists_is_signed_out()
+    {
+        var (client, user) = await factory.Register();
+        await factory.WithDb(db => db.Users.Where(u => u.Id == user.Id).ExecuteDeleteAsync());
+
+        var res = await client.PostAsJsonAsync("/api/listings", TestData.Apartment(), ApiFactory.Json);
+        Assert.Equal(HttpStatusCode.Unauthorized, res.StatusCode);
     }
 
     [Fact]

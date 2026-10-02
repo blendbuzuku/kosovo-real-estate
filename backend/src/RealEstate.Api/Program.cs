@@ -42,6 +42,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             NameClaimType = "name",
             RoleClaimType = "role"
         };
+        // A token can outlive its account (database reset, deleted user). Treat it as signed out
+        // instead of letting writes fail on the owner foreign key.
+        o.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async ctx =>
+            {
+                var id = ctx.Principal?.UserIdOrNull();
+                var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                if (id is null || !await db.Users.AnyAsync(u => u.Id == id, ctx.HttpContext.RequestAborted))
+                    ctx.Fail("The account for this token no longer exists.");
+            }
+        };
     });
 builder.Services.AddAuthorization();
 

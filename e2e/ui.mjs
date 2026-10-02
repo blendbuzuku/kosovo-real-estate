@@ -707,6 +707,44 @@ await section('V8 routes and guards', async () => {
   ok(new URL(p.url()).pathname === '/', 'non-admin cannot open moderation');
   await p.click('.avatar-btn');
   ok(!(await p.locator('.menu a:has-text("Moderation")').count()), 'no Moderation link for members');
+
+  // A session that ended while the page was open: saving an ad sends you to log in, then back.
+  for (const k of ['POST /api/listings 401', 'GET /api/auth/me 401', 'GET /api/me/conversations/unread 401']) expected4xx.add(k);
+  await p.goto(`${BASE}/post`);
+  await p.click('.pick:has-text("Land")');
+  await p.route('**/api/listings', (r) => (r.request().method() === 'POST' ? r.fulfill({ status: 401, body: '' }) : r.continue()));
+  await p.click('.wizard-foot .btn:has-text("Continue")').catch(() => {});
+  if (await p.locator('.pick.wide').count()) {
+    await p.locator('.pick.wide').first().click();
+    await p.click('.wizard-foot .btn:has-text("Continue")');
+  }
+  await p.selectOption('.form-grid label.stack:has-text("Municipality") select', { label: 'Pejë' });
+  await p.click('.wizard-foot .btn:has-text("Continue")');
+  await fillDetails(p, cats.find((c) => c.key === 'land'), 'Sale');
+  await p.fill('.fgroup:has(legend:text-is("Price and description")) .with-unit input', '30000');
+  await p.click('button:has-text("Use suggestion")');
+  await p.fill('textarea[maxlength="5000"]', 'A plot posted after the session ended, to test logging in again.');
+  await p.click('.steps li:nth-child(5) button');
+  await p.waitForURL((u) => u.pathname === '/login');
+  await p.unroute('**/api/listings');
+  ok(await p.locator('.notice:has-text("session ended")').isVisible(), 'ended session asks to log in again');
+  ok(await p.locator('.login-link').count(), 'ended session shows logged out');
+  await p.fill('input[type=email]', 'seeker@demo.local');
+  await p.fill('input[type=password]', 'Demo1234!');
+  await p.click('form button[type=submit]');
+  await p.waitForURL((u) => u.pathname === '/post');
+  ok(true, 'logging in again returns to the wizard');
+
+  // A saved login whose account no longer exists is dropped on load.
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('prona.auth'));
+    const [h, b] = s.token.split('.');
+    s.token = `${h}.${b}.invalidsignature`;
+    localStorage.setItem('prona.auth', JSON.stringify(s));
+  });
+  await p.goto(BASE);
+  await p.waitForSelector('.login-link');
+  ok(true, 'stale saved login is signed out on load');
 });
 
 // =====================================================================================
