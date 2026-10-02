@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Api.Data;
 using RealEstate.Api.Domain;
+using RealEstate.Api.Features.Meta;
 using RealEstate.Api.Infrastructure;
 
 namespace RealEstate.Api.Features.Listings;
@@ -16,12 +17,13 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
     private static readonly string[] AllowedImageTypes = ["image/jpeg", "image/png", "image/webp"];
 
     /// <summary>Public search over live listings.</summary>
+    /// <remarks>Category fields are filtered with f.&lt;key&gt;, f.&lt;key&gt;.min and f.&lt;key&gt;.max query parameters.</remarks>
     [HttpGet]
     public Task<PagedResult<ListingSummaryDto>> Search(
         [FromQuery] ListingSearchCriteria criteria, int page = 1, int pageSize = 20, CancellationToken ct = default) =>
         db.Listings.AsNoTracking()
             .Where(l => l.Status == ListingStatus.Active)
-            .Filter(criteria)
+            .Filter(criteria.WithFieldFilters(Request.Query))
             .Sort(criteria.Sort)
             .ToPageAsync(page, pageSize, storage, ct);
 
@@ -32,12 +34,30 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         // ST_X/ST_Y don't exist for geography, so read the point and split it here.
         var rows = await db.Listings.AsNoTracking()
             .Where(l => l.Status == ListingStatus.Active)
-            .Filter(criteria)
+            .Filter(criteria.WithFieldFilters(Request.Query))
             .Sort(criteria.Sort)
             .Take(1000)
-            .Select(l => new { l.Id, l.Location, l.PriceEur, l.DealType, l.PropertyType })
+            .Select(l => new { l.Id, l.Location, l.PriceEur, l.DealType, l.Category })
             .ToListAsync(ct);
-        return rows.Select(r => new MapPinDto(r.Id, r.Location.Y, r.Location.X, r.PriceEur, r.DealType, r.PropertyType)).ToList();
+        return rows.Select(r => new MapPinDto(r.Id, r.Location.Y, r.Location.X, r.PriceEur, r.DealType, r.Category)).ToList();
+    }
+
+    /// <summary>Other live ads in the same category and deal, nearest first.</summary>
+    [HttpGet("{id:guid}/similar")]
+    public async Task<ActionResult<IReadOnlyList<ListingSummaryDto>>> Similar(Guid id, int take = 8, CancellationToken ct = default)
+    {
+        var source = await db.Listings.AsNoTracking()
+            .Where(l => l.Id == id)
+            .Select(l => new { l.Category, l.DealType, l.Location })
+            .FirstOrDefaultAsync(ct);
+        if (source is null) return NotFound();
+        var rows = await db.Listings.AsNoTracking()
+            .Where(l => l.Status == ListingStatus.Active && l.Id != id && l.Category == source.Category && l.DealType == source.DealType)
+            .OrderBy(l => l.Location.Distance(source.Location))
+            .Take(Math.Clamp(take, 1, 24))
+            .SelectSummaryRows()
+            .ToListAsync(ct);
+        return rows.Select(r => r.ToSummary(storage)).ToList();
     }
 
     [HttpGet("{id:guid}")]
@@ -45,7 +65,7 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
     {
         var listing = await db.Listings
             .Include(l => l.Photos)
-            .Include(l => l.Owner).ThenInclude(o => o.Agency)
+            .Include(l => l.Owner).ThenInclude(o => o.Business)
             .FirstOrDefaultAsync(l => l.Id == id, ct);
         if (listing is null) return NotFound();
 
@@ -88,22 +108,24 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         return q.OrderByDescending(l => l.UpdatedAt).ToPageAsync(page, pageSize, storage, ct);
     }
 
+    /// <summary>Anyone signed in can post; the ad starts as a draft.</summary>
     [HttpPost]
-    [Authorize(Roles = Roles.Posters)]
+    [Authorize]
     public async Task<ActionResult<ListingDetailDto>> Create(ListingUpsertRequest request, CancellationToken ct)
     {
         var now = clock.GetUtcNow();
         var listing = new Listing
         {
             OwnerId = User.UserId(),
+            Category = "",
             Title = "",
             Description = "",
-            City = "",
-            Location = ListingQuery.PointAt(request.Lat, request.Lng),
+            Municipality = "",
+            Location = ListingQuery.PointAt(0, 0),
             CreatedAt = now,
             UpdatedAt = now
         };
-        listing.Apply(request);
+        if (Apply(listing, request) is { } invalid) return invalid;
         db.Listings.Add(listing);
         await db.SaveChangesAsync(ct);
         return CreatedAtAction(nameof(Get), new { id = listing.Id }, await LoadDetail(listing.Id, ct));
@@ -115,7 +137,7 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
     {
         var listing = await FindOwned(id, ct);
         if (listing is null) return NotFound();
-        listing.Apply(request);
+        if (Apply(listing, request) is { } invalid) return invalid;
         listing.MarkEdited(clock.GetUtcNow());
         await db.SaveChangesAsync(ct);
         return await LoadDetail(id, ct);
@@ -243,9 +265,49 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
     {
         var listing = await db.Listings.AsNoTracking()
             .Include(l => l.Photos)
-            .Include(l => l.Owner).ThenInclude(o => o.Agency)
+            .Include(l => l.Owner).ThenInclude(o => o.Business)
             .FirstAsync(l => l.Id == id, ct);
         return ToDetail(listing, isMine: true, isFavorite: false);
+    }
+
+    /// <summary>Validates the request against the category and location lists and copies it onto the listing.</summary>
+    private ActionResult? Apply(Listing listing, ListingUpsertRequest r)
+    {
+        var errors = new Dictionary<string, string[]>();
+        var category = Categories.Find(r.Category);
+        if (category is null) errors["category"] = [$"Unknown category '{r.Category}'."];
+        else if (!category.Deals.Contains(r.DealType))
+            errors["dealType"] = [$"{category.Name} ads can't be listed as {r.DealType}."];
+
+        var municipality = Locations.Find(r.Municipality);
+        var place = string.IsNullOrWhiteSpace(r.Place) ? null : r.Place.Trim();
+        if (municipality is null) errors["municipality"] = [$"Unknown municipality '{r.Municipality}'."];
+        else if (place is not null && !Locations.HasPlace(municipality, place))
+            errors["place"] = [$"'{place}' isn't a neighbourhood or village of {municipality.Name}. Leave it empty and use the address instead."];
+        if (r.Lat is null != r.Lng is null) errors["lat"] = ["Give both latitude and longitude, or neither."];
+
+        var attributes = "{}";
+        if (category is not null && !errors.ContainsKey("dealType"))
+        {
+            var (json, attributeErrors) = AttributeValidator.Normalize(category, r.DealType, r.Attributes);
+            foreach (var (key, value) in attributeErrors) errors[key] = value;
+            attributes = json;
+        }
+
+        if (errors.Count > 0) return ValidationProblem(new ValidationProblemDetails(errors));
+
+        listing.Category = category!.Key;
+        listing.DealType = r.DealType;
+        listing.Title = r.Title.Trim();
+        listing.Description = r.Description.Trim();
+        listing.PriceEur = r.PriceEur;
+        listing.Negotiable = r.Negotiable;
+        listing.Municipality = municipality!.Name;
+        listing.Place = place;
+        listing.Address = string.IsNullOrWhiteSpace(r.Address) ? null : r.Address.Trim();
+        listing.Location = r is { Lat: { } lat, Lng: { } lng } ? ListingQuery.PointAt(lat, lng) : ListingQuery.PointAt(municipality.Lat, municipality.Lng);
+        listing.Attributes = attributes;
+        return null;
     }
 
     private PhotoDto ToPhotoDto(ListingPhoto p) =>
@@ -254,15 +316,14 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
     private ListingDetailDto ToDetail(Listing l, bool isMine, bool isFavorite)
     {
         var showModeration = isMine || User.IsAdmin();
+        var owner = l.Owner;
         return new ListingDetailDto(
-            l.Id, l.Title, l.Description, l.PropertyType, l.DealType, l.PriceEur, l.AreaM2, l.PricePerM2,
-            l.Rooms, l.Bathrooms, l.Floor, l.TotalFloors, l.YearBuilt, l.Heating,
-            l.HasParking, l.IsFurnished, l.HasElevator, l.HasBalcony,
-            l.City, l.Neighborhood, l.Address, l.Location.Y, l.Location.X,
-            new LegalStatusDto(l.Legal.HasConstructionPermit, l.Legal.HasCadastreCertificate, l.Legal.Legalization, l.Legal.Notes),
+            l.Id, l.Category, l.DealType, l.Title, l.Description, l.PriceEur, l.Negotiable, l.PricePerM2,
+            ListingMapping.ParseAttributes(l.Attributes),
+            l.Municipality, l.Place, l.Address, l.Location.Y, l.Location.X,
             l.Photos.OrderBy(p => p.SortOrder).Select(ToPhotoDto).ToList(),
-            new ListingOwnerDto(l.Owner.Id, l.Owner.DisplayName, l.Owner.Agency is not null, l.Owner.Agency?.Slug,
-                l.Owner.Agency?.Name, !string.IsNullOrEmpty(l.Owner.Phone)),
+            new ListingOwnerDto(owner.Id, owner.DisplayName, !string.IsNullOrEmpty(owner.Phone), owner.CreatedAt,
+                owner.Business?.Slug, owner.Business?.Name, owner.Business?.Kind),
             l.Status,
             showModeration ? l.ModerationNote : null,
             l.CreatedAt, l.PublishedAt, l.ExpiresAt,

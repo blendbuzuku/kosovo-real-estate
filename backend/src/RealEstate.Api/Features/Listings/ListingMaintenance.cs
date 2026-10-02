@@ -71,12 +71,12 @@ public class ListingMaintenance(
             if (total > 0)
             {
                 var top = await matches.OrderByDescending(l => l.PublishedAt).Take(10)
-                    .Select(l => new { l.Id, l.Title, l.PriceEur, l.City, l.AreaM2 })
+                    .Select(l => new { l.Id, l.Title, l.PriceEur, l.DealType, l.Municipality, l.Place })
                     .ToListAsync(ct);
 
                 var body = new StringBuilder($"<p>{total} new listing{(total == 1 ? "" : "s")} match your search <strong>{WebUtility.HtmlEncode(search.Name)}</strong>:</p><ul>");
                 foreach (var l in top)
-                    body.Append($"<li><a href=\"{AppUrl}/listings/{l.Id}\">{WebUtility.HtmlEncode(l.Title)}</a> · {l.PriceEur:N0} € · {l.AreaM2:0.#} m² · {WebUtility.HtmlEncode(l.City)}</li>");
+                    body.Append($"<li><a href=\"{AppUrl}/listings/{l.Id}\">{WebUtility.HtmlEncode(l.Title)}</a> · {PriceText(l.PriceEur, l.DealType)} · {WebUtility.HtmlEncode(l.Place is null ? l.Municipality : $"{l.Place}, {l.Municipality}")}</li>");
                 body.Append($"</ul><p><a href=\"{AppUrl}/saved-searches\">Manage your alerts</a></p>");
 
                 await email.SendAsync(search.User.Email, $"New listings for \"{search.Name}\"", body.ToString(), ct);
@@ -85,6 +85,14 @@ public class ListingMaintenance(
         }
         await db.SaveChangesAsync(ct);
     }
+
+    public static string PriceText(decimal price, DealType deal) => deal switch
+    {
+        DealType.RentMonthly => $"{price:N0} € / month",
+        DealType.RentNightly => $"{price:N0} € / night",
+        DealType.RentDaily => $"{price:N0} € / day",
+        _ => $"{price:N0} €"
+    };
 }
 
 public class ListingMaintenanceWorker(IServiceScopeFactory scopes, ILogger<ListingMaintenanceWorker> log, IConfiguration config)

@@ -2,37 +2,27 @@ namespace RealEstate.Api.Domain;
 
 public enum UserRole
 {
-    Seeker,
-    Owner,
-    Agency,
+    Member,
+    Business,
     Admin
 }
 
-public enum PropertyType
+/// <summary>What kind of business runs a business account. Shown on its public page and on its ads.</summary>
+public enum BusinessKind
 {
-    Apartment,
-    House,
-    Land,
-    Commercial
+    RealEstateAgency,
+    Developer,
+    CarDealer,
+    RentACar,
+    Other
 }
 
 public enum DealType
 {
     Sale,
     RentMonthly,
-    RentShortTerm
-}
-
-public enum HeatingType
-{
-    None,
-    District,
-    Central,
-    Electric,
-    HeatPump,
-    AirConditioning,
-    Wood,
-    Other
+    RentNightly,
+    RentDaily
 }
 
 public enum ListingStatus
@@ -45,14 +35,10 @@ public enum ListingStatus
     Archived
 }
 
-/// <summary>Whether the building has been legalized under Kosovo's legalization law.</summary>
-public enum LegalizationStatus
+public enum SellerType
 {
-    Unknown,
-    Legalized,
-    InProcess,
-    NotLegalized,
-    NotRequired
+    Private,
+    Business
 }
 
 public enum ListingSort
@@ -61,7 +47,8 @@ public enum ListingSort
     PriceAsc,
     PriceDesc,
     PricePerM2Asc,
-    PricePerM2Desc
+    YearDesc,
+    MileageAsc
 }
 
 public enum ReportReason

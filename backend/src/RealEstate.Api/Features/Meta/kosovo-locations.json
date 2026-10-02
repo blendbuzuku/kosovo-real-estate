@@ -1,0 +1,2616 @@
+[
+ {
+  "name": "Prishtinë",
+  "lat": 42.6627,
+  "lng": 21.1655,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Aktash",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Arbëria (Dragodan)",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bregu i Diellit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Emshir",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kalabria",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Diellit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Trimave",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Hajdarëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kolovica",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Muhaxhirëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lakrishte",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Mati 1",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Mati 2",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Pejton",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Qyteza Pejton",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Shkabaj",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Sofalia",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Taslixhe",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Tophane",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ulpiana",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Velania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Veternik",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Vreshtat",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Zona Industriale",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Hajvali",
+    "kind": "village"
+   },
+   {
+    "name": "Bardhosh",
+    "kind": "village"
+   },
+   {
+    "name": "Barilevë",
+    "kind": "village"
+   },
+   {
+    "name": "Grashticë",
+    "kind": "village"
+   },
+   {
+    "name": "Keqekollë",
+    "kind": "village"
+   },
+   {
+    "name": "Koliq",
+    "kind": "village"
+   },
+   {
+    "name": "Llukar",
+    "kind": "village"
+   },
+   {
+    "name": "Marec",
+    "kind": "village"
+   },
+   {
+    "name": "Mramor",
+    "kind": "village"
+   },
+   {
+    "name": "Nishec",
+    "kind": "village"
+   },
+   {
+    "name": "Prugoc",
+    "kind": "village"
+   },
+   {
+    "name": "Rimanishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Sharban",
+    "kind": "village"
+   },
+   {
+    "name": "Siqevë",
+    "kind": "village"
+   },
+   {
+    "name": "Slivovë",
+    "kind": "village"
+   },
+   {
+    "name": "Sofali",
+    "kind": "village"
+   },
+   {
+    "name": "Teneshdoll",
+    "kind": "village"
+   },
+   {
+    "name": "Viti e Poshtme",
+    "kind": "village"
+   },
+   {
+    "name": "Viti e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Zllash",
+    "kind": "village"
+   },
+   {
+    "name": "Busi",
+    "kind": "village"
+   },
+   {
+    "name": "Kizhnicë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Prizren",
+  "lat": 42.2139,
+  "lng": 20.7397,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Arbana",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bajram Curri",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bazhdarhane",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Jeni Mahalle",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lakuriq",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Marash",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ortakoll",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Tusus",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Te Ura e Gurit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Nënkalaja",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Përroi i Thatë",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Atmagjë",
+    "kind": "village"
+   },
+   {
+    "name": "Billushë",
+    "kind": "village"
+   },
+   {
+    "name": "Dedaj",
+    "kind": "village"
+   },
+   {
+    "name": "Dushanovë",
+    "kind": "village"
+   },
+   {
+    "name": "Gërnçar",
+    "kind": "village"
+   },
+   {
+    "name": "Gjonaj",
+    "kind": "village"
+   },
+   {
+    "name": "Hoçë e Qytetit",
+    "kind": "village"
+   },
+   {
+    "name": "Jabllanicë",
+    "kind": "village"
+   },
+   {
+    "name": "Kabash",
+    "kind": "village"
+   },
+   {
+    "name": "Korishë",
+    "kind": "village"
+   },
+   {
+    "name": "Landovicë",
+    "kind": "village"
+   },
+   {
+    "name": "Lubiqevë",
+    "kind": "village"
+   },
+   {
+    "name": "Lubizhdë",
+    "kind": "village"
+   },
+   {
+    "name": "Lutogllavë",
+    "kind": "village"
+   },
+   {
+    "name": "Mazrek",
+    "kind": "village"
+   },
+   {
+    "name": "Medvec",
+    "kind": "village"
+   },
+   {
+    "name": "Mushnikovë",
+    "kind": "village"
+   },
+   {
+    "name": "Pirana",
+    "kind": "village"
+   },
+   {
+    "name": "Planejë",
+    "kind": "village"
+   },
+   {
+    "name": "Poslishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Reçan",
+    "kind": "village"
+   },
+   {
+    "name": "Romajë",
+    "kind": "village"
+   },
+   {
+    "name": "Skorobisht",
+    "kind": "village"
+   },
+   {
+    "name": "Struzhë",
+    "kind": "village"
+   },
+   {
+    "name": "Vlashnjë",
+    "kind": "village"
+   },
+   {
+    "name": "Zhur",
+    "kind": "village"
+   },
+   {
+    "name": "Zym",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Pejë",
+  "lat": 42.6591,
+  "lng": 20.2883,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Karagaç",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kapeshnica",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kristal",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Brezovica",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Fidanishtja",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Haxhi Zeka",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kryshtali",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Zatra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Vitomiricë",
+    "kind": "village"
+   },
+   {
+    "name": "Raushiq",
+    "kind": "village"
+   },
+   {
+    "name": "Dubovë",
+    "kind": "village"
+   },
+   {
+    "name": "Loxhë",
+    "kind": "village"
+   },
+   {
+    "name": "Novosellë",
+    "kind": "village"
+   },
+   {
+    "name": "Rugovë",
+    "kind": "village"
+   },
+   {
+    "name": "Boge",
+    "kind": "village"
+   },
+   {
+    "name": "Haxhaj",
+    "kind": "village"
+   },
+   {
+    "name": "Lugu i Baranit",
+    "kind": "village"
+   },
+   {
+    "name": "Kuqishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Shtupeq",
+    "kind": "village"
+   },
+   {
+    "name": "Nabërgjan",
+    "kind": "village"
+   },
+   {
+    "name": "Zahaq",
+    "kind": "village"
+   },
+   {
+    "name": "Ruhot",
+    "kind": "village"
+   },
+   {
+    "name": "Trestenik",
+    "kind": "village"
+   },
+   {
+    "name": "Vranoc",
+    "kind": "village"
+   },
+   {
+    "name": "Gorazhdec",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Gjakovë",
+  "lat": 42.3803,
+  "lng": 20.4308,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Çarshia e Madhe",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Blloku i Ri",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Spitalit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ciganmahalla",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Mahalla e Hadumit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Orize",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodrali",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja Rruga e Prizrenit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bec",
+    "kind": "village"
+   },
+   {
+    "name": "Brekoc",
+    "kind": "village"
+   },
+   {
+    "name": "Damjan",
+    "kind": "village"
+   },
+   {
+    "name": "Dobrosh",
+    "kind": "village"
+   },
+   {
+    "name": "Guska",
+    "kind": "village"
+   },
+   {
+    "name": "Hereq",
+    "kind": "village"
+   },
+   {
+    "name": "Jahoc",
+    "kind": "village"
+   },
+   {
+    "name": "Kusar",
+    "kind": "village"
+   },
+   {
+    "name": "Lugbunar",
+    "kind": "village"
+   },
+   {
+    "name": "Meqe",
+    "kind": "village"
+   },
+   {
+    "name": "Moglicë",
+    "kind": "village"
+   },
+   {
+    "name": "Ponoshec",
+    "kind": "village"
+   },
+   {
+    "name": "Rogovë",
+    "kind": "village"
+   },
+   {
+    "name": "Skivjan",
+    "kind": "village"
+   },
+   {
+    "name": "Smaq",
+    "kind": "village"
+   },
+   {
+    "name": "Ujz",
+    "kind": "village"
+   },
+   {
+    "name": "Zhub",
+    "kind": "village"
+   },
+   {
+    "name": "Batushë",
+    "kind": "village"
+   },
+   {
+    "name": "Deva",
+    "kind": "village"
+   },
+   {
+    "name": "Bishtazhin",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Ferizaj",
+  "lat": 42.3706,
+  "lng": 21.1553,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bajram Curri",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Sallahane",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Stacionit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ura e Shehut",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Bishit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Babush",
+    "kind": "village"
+   },
+   {
+    "name": "Bablak",
+    "kind": "village"
+   },
+   {
+    "name": "Burrnik",
+    "kind": "village"
+   },
+   {
+    "name": "Dremjak",
+    "kind": "village"
+   },
+   {
+    "name": "Greme",
+    "kind": "village"
+   },
+   {
+    "name": "Gaçkë",
+    "kind": "village"
+   },
+   {
+    "name": "Komogllavë",
+    "kind": "village"
+   },
+   {
+    "name": "Lloshkobare",
+    "kind": "village"
+   },
+   {
+    "name": "Mirosalë",
+    "kind": "village"
+   },
+   {
+    "name": "Nerodime e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Nerodime e Poshtme",
+    "kind": "village"
+   },
+   {
+    "name": "Pleshinë",
+    "kind": "village"
+   },
+   {
+    "name": "Prelez i Jerlive",
+    "kind": "village"
+   },
+   {
+    "name": "Rakaj",
+    "kind": "village"
+   },
+   {
+    "name": "Softaj",
+    "kind": "village"
+   },
+   {
+    "name": "Sojevë",
+    "kind": "village"
+   },
+   {
+    "name": "Talinoc i Jerlive",
+    "kind": "village"
+   },
+   {
+    "name": "Talinoc i Muhaxherëve",
+    "kind": "village"
+   },
+   {
+    "name": "Varosh",
+    "kind": "village"
+   },
+   {
+    "name": "Zaskok",
+    "kind": "village"
+   },
+   {
+    "name": "Shtërpcë e Ferizajt",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Gjilan",
+  "lat": 42.4605,
+  "lng": 21.4699,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Arbëria",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Dëshmorëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kalabria",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bajram Curri",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Iliria",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Xhamia e Madhe",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bresalc",
+    "kind": "village"
+   },
+   {
+    "name": "Cërnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Dunav",
+    "kind": "village"
+   },
+   {
+    "name": "Gadish",
+    "kind": "village"
+   },
+   {
+    "name": "Haxhaj",
+    "kind": "village"
+   },
+   {
+    "name": "Kmetoc",
+    "kind": "village"
+   },
+   {
+    "name": "Livoç i Epërm",
+    "kind": "village"
+   },
+   {
+    "name": "Livoç i Poshtëm",
+    "kind": "village"
+   },
+   {
+    "name": "Malishevë",
+    "kind": "village"
+   },
+   {
+    "name": "Mollopolc",
+    "kind": "village"
+   },
+   {
+    "name": "Përlepnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Pidiq",
+    "kind": "village"
+   },
+   {
+    "name": "Poliçkë",
+    "kind": "village"
+   },
+   {
+    "name": "Ponesh",
+    "kind": "village"
+   },
+   {
+    "name": "Selishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Shillovë",
+    "kind": "village"
+   },
+   {
+    "name": "Stublinë",
+    "kind": "village"
+   },
+   {
+    "name": "Uglar",
+    "kind": "village"
+   },
+   {
+    "name": "Vërbicë e Kmetocit",
+    "kind": "village"
+   },
+   {
+    "name": "Zhegër",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Mitrovicë",
+  "lat": 42.8833,
+  "lng": 20.8667,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bair",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Tavnik",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ilirida",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Minatorëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Shipol",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Zhabar",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Vaganicë",
+    "kind": "village"
+   },
+   {
+    "name": "Shupkovc",
+    "kind": "village"
+   },
+   {
+    "name": "Frashër",
+    "kind": "village"
+   },
+   {
+    "name": "Koshtovë",
+    "kind": "village"
+   },
+   {
+    "name": "Bajgorë",
+    "kind": "village"
+   },
+   {
+    "name": "Melenicë",
+    "kind": "village"
+   },
+   {
+    "name": "Rashan",
+    "kind": "village"
+   },
+   {
+    "name": "Zhabar i Ulët",
+    "kind": "village"
+   },
+   {
+    "name": "Kçiq i Madh",
+    "kind": "village"
+   },
+   {
+    "name": "Kçiq i Vogël",
+    "kind": "village"
+   },
+   {
+    "name": "Mazhiq",
+    "kind": "village"
+   },
+   {
+    "name": "Stantërg",
+    "kind": "village"
+   },
+   {
+    "name": "Vidimriq",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Mitrovicë e Veriut",
+  "lat": 42.895,
+  "lng": 20.8656,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Minatorëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Boshnjakëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Tre Kullat",
+    "kind": "neighbourhood"
+   }
+  ]
+ },
+ {
+  "name": "Podujevë",
+  "lat": 42.9106,
+  "lng": 21.1931,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dardania",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bradash",
+    "kind": "village"
+   },
+   {
+    "name": "Batllavë",
+    "kind": "village"
+   },
+   {
+    "name": "Besi",
+    "kind": "village"
+   },
+   {
+    "name": "Dobratin",
+    "kind": "village"
+   },
+   {
+    "name": "Dumosh",
+    "kind": "village"
+   },
+   {
+    "name": "Gllamnik",
+    "kind": "village"
+   },
+   {
+    "name": "Kërpimeh",
+    "kind": "village"
+   },
+   {
+    "name": "Letancë",
+    "kind": "village"
+   },
+   {
+    "name": "Lluzhan",
+    "kind": "village"
+   },
+   {
+    "name": "Majac",
+    "kind": "village"
+   },
+   {
+    "name": "Merdar",
+    "kind": "village"
+   },
+   {
+    "name": "Orllan",
+    "kind": "village"
+   },
+   {
+    "name": "Penuhë",
+    "kind": "village"
+   },
+   {
+    "name": "Revuc",
+    "kind": "village"
+   },
+   {
+    "name": "Sfeqël",
+    "kind": "village"
+   },
+   {
+    "name": "Shajkoc",
+    "kind": "village"
+   },
+   {
+    "name": "Sibovc",
+    "kind": "village"
+   },
+   {
+    "name": "Surkish",
+    "kind": "village"
+   },
+   {
+    "name": "Turiçec",
+    "kind": "village"
+   },
+   {
+    "name": "Zakut",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Vushtrri",
+  "lat": 42.8231,
+  "lng": 20.9675,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kalaja",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Akrashticë",
+    "kind": "village"
+   },
+   {
+    "name": "Bukosh",
+    "kind": "village"
+   },
+   {
+    "name": "Dumnicë e Poshtme",
+    "kind": "village"
+   },
+   {
+    "name": "Gllavatin",
+    "kind": "village"
+   },
+   {
+    "name": "Karaçë",
+    "kind": "village"
+   },
+   {
+    "name": "Maxhunaj",
+    "kind": "village"
+   },
+   {
+    "name": "Nedakoc",
+    "kind": "village"
+   },
+   {
+    "name": "Pantinë",
+    "kind": "village"
+   },
+   {
+    "name": "Pestovë",
+    "kind": "village"
+   },
+   {
+    "name": "Prelloc",
+    "kind": "village"
+   },
+   {
+    "name": "Samadrexhë",
+    "kind": "village"
+   },
+   {
+    "name": "Sllakoc",
+    "kind": "village"
+   },
+   {
+    "name": "Stanoc i Epërm",
+    "kind": "village"
+   },
+   {
+    "name": "Stanoc i Poshtëm",
+    "kind": "village"
+   },
+   {
+    "name": "Shtitarica",
+    "kind": "village"
+   },
+   {
+    "name": "Vërnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Studime e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Studime e Poshtme",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Fushë Kosovë",
+  "lat": 42.6381,
+  "lng": 21.0961,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Ashkalinjve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Kodra e Dëshmorëve",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Stacionit",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bardh i Madh",
+    "kind": "village"
+   },
+   {
+    "name": "Bardh i Vogël",
+    "kind": "village"
+   },
+   {
+    "name": "Dobrevë",
+    "kind": "village"
+   },
+   {
+    "name": "Graboc i Epërm",
+    "kind": "village"
+   },
+   {
+    "name": "Graboc i Poshtëm",
+    "kind": "village"
+   },
+   {
+    "name": "Harilaq",
+    "kind": "village"
+   },
+   {
+    "name": "Kuzmin",
+    "kind": "village"
+   },
+   {
+    "name": "Lismir",
+    "kind": "village"
+   },
+   {
+    "name": "Miradi e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Miradi e Poshtme",
+    "kind": "village"
+   },
+   {
+    "name": "Nakaradë",
+    "kind": "village"
+   },
+   {
+    "name": "Pomozotin",
+    "kind": "village"
+   },
+   {
+    "name": "Sllatinë e Madhe",
+    "kind": "village"
+   },
+   {
+    "name": "Vragoli",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Lipjan",
+  "lat": 42.5217,
+  "lng": 21.1258,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Banullë",
+    "kind": "village"
+   },
+   {
+    "name": "Bujan",
+    "kind": "village"
+   },
+   {
+    "name": "Dobrajë e Madhe",
+    "kind": "village"
+   },
+   {
+    "name": "Gadime e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Gadime e Ulët",
+    "kind": "village"
+   },
+   {
+    "name": "Glloboderë",
+    "kind": "village"
+   },
+   {
+    "name": "Grackë e Vjetër",
+    "kind": "village"
+   },
+   {
+    "name": "Janjevë",
+    "kind": "village"
+   },
+   {
+    "name": "Konjuh",
+    "kind": "village"
+   },
+   {
+    "name": "Krojmir",
+    "kind": "village"
+   },
+   {
+    "name": "Llugaxhi",
+    "kind": "village"
+   },
+   {
+    "name": "Magure",
+    "kind": "village"
+   },
+   {
+    "name": "Medvec",
+    "kind": "village"
+   },
+   {
+    "name": "Ribar i Madh",
+    "kind": "village"
+   },
+   {
+    "name": "Rufc i Vjetër",
+    "kind": "village"
+   },
+   {
+    "name": "Shalë",
+    "kind": "village"
+   },
+   {
+    "name": "Sllovi",
+    "kind": "village"
+   },
+   {
+    "name": "Teqë",
+    "kind": "village"
+   },
+   {
+    "name": "Torinë",
+    "kind": "village"
+   },
+   {
+    "name": "Vershec",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Drenas",
+  "lat": 42.6283,
+  "lng": 20.8939,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Abri e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Arllat",
+    "kind": "village"
+   },
+   {
+    "name": "Baicë",
+    "kind": "village"
+   },
+   {
+    "name": "Fushticë e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Gradicë",
+    "kind": "village"
+   },
+   {
+    "name": "Komoran",
+    "kind": "village"
+   },
+   {
+    "name": "Korroticë",
+    "kind": "village"
+   },
+   {
+    "name": "Likoshan",
+    "kind": "village"
+   },
+   {
+    "name": "Llapushnik",
+    "kind": "village"
+   },
+   {
+    "name": "Negroc",
+    "kind": "village"
+   },
+   {
+    "name": "Poklek i Ri",
+    "kind": "village"
+   },
+   {
+    "name": "Qirez",
+    "kind": "village"
+   },
+   {
+    "name": "Sankoc",
+    "kind": "village"
+   },
+   {
+    "name": "Shtrubullovë",
+    "kind": "village"
+   },
+   {
+    "name": "Tërdec",
+    "kind": "village"
+   },
+   {
+    "name": "Vasilevë",
+    "kind": "village"
+   },
+   {
+    "name": "Vërboc",
+    "kind": "village"
+   },
+   {
+    "name": "Zabel",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Suharekë",
+  "lat": 42.3586,
+  "lng": 20.825,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Budakovë",
+    "kind": "village"
+   },
+   {
+    "name": "Bukosh",
+    "kind": "village"
+   },
+   {
+    "name": "Delloc",
+    "kind": "village"
+   },
+   {
+    "name": "Duhël",
+    "kind": "village"
+   },
+   {
+    "name": "Gelancë",
+    "kind": "village"
+   },
+   {
+    "name": "Gjinoc",
+    "kind": "village"
+   },
+   {
+    "name": "Greiçec",
+    "kind": "village"
+   },
+   {
+    "name": "Leshan",
+    "kind": "village"
+   },
+   {
+    "name": "Mushtisht",
+    "kind": "village"
+   },
+   {
+    "name": "Nishor",
+    "kind": "village"
+   },
+   {
+    "name": "Peqan",
+    "kind": "village"
+   },
+   {
+    "name": "Reshtan",
+    "kind": "village"
+   },
+   {
+    "name": "Sallagrazhdë",
+    "kind": "village"
+   },
+   {
+    "name": "Shiroko",
+    "kind": "village"
+   },
+   {
+    "name": "Studençan",
+    "kind": "village"
+   },
+   {
+    "name": "Tërnje",
+    "kind": "village"
+   },
+   {
+    "name": "Vërshec",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Rahovec",
+  "lat": 42.3994,
+  "lng": 20.6547,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Lagjja e Re",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bratotin",
+    "kind": "village"
+   },
+   {
+    "name": "Drenoc",
+    "kind": "village"
+   },
+   {
+    "name": "Fortesë",
+    "kind": "village"
+   },
+   {
+    "name": "Hoçë e Madhe",
+    "kind": "village"
+   },
+   {
+    "name": "Krusha e Madhe",
+    "kind": "village"
+   },
+   {
+    "name": "Krusha e Vogël",
+    "kind": "village"
+   },
+   {
+    "name": "Malësi e Vogël",
+    "kind": "village"
+   },
+   {
+    "name": "Mrasor",
+    "kind": "village"
+   },
+   {
+    "name": "Opterushë",
+    "kind": "village"
+   },
+   {
+    "name": "Pataçan",
+    "kind": "village"
+   },
+   {
+    "name": "Polluzhë",
+    "kind": "village"
+   },
+   {
+    "name": "Ratkoc",
+    "kind": "village"
+   },
+   {
+    "name": "Sapniq",
+    "kind": "village"
+   },
+   {
+    "name": "Xërxë",
+    "kind": "village"
+   },
+   {
+    "name": "Zoqishtë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Malishevë",
+  "lat": 42.4822,
+  "lng": 20.7458,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bellanicë",
+    "kind": "village"
+   },
+   {
+    "name": "Banjë",
+    "kind": "village"
+   },
+   {
+    "name": "Carrallukë",
+    "kind": "village"
+   },
+   {
+    "name": "Dragobil",
+    "kind": "village"
+   },
+   {
+    "name": "Gurbardh",
+    "kind": "village"
+   },
+   {
+    "name": "Kijevë",
+    "kind": "village"
+   },
+   {
+    "name": "Lladroc",
+    "kind": "village"
+   },
+   {
+    "name": "Llazicë",
+    "kind": "village"
+   },
+   {
+    "name": "Mirushë",
+    "kind": "village"
+   },
+   {
+    "name": "Pagarushë",
+    "kind": "village"
+   },
+   {
+    "name": "Plloçicë",
+    "kind": "village"
+   },
+   {
+    "name": "Ryzhdeve",
+    "kind": "village"
+   },
+   {
+    "name": "Shkozë",
+    "kind": "village"
+   },
+   {
+    "name": "Turjakë",
+    "kind": "village"
+   },
+   {
+    "name": "Tërpezë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Kamenicë",
+  "lat": 42.5781,
+  "lng": 21.5803,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Busavatë",
+    "kind": "village"
+   },
+   {
+    "name": "Hodonoc",
+    "kind": "village"
+   },
+   {
+    "name": "Koretin",
+    "kind": "village"
+   },
+   {
+    "name": "Kopërnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Kufcë",
+    "kind": "village"
+   },
+   {
+    "name": "Ropotovë e Madhe",
+    "kind": "village"
+   },
+   {
+    "name": "Rogaçicë",
+    "kind": "village"
+   },
+   {
+    "name": "Topanicë",
+    "kind": "village"
+   },
+   {
+    "name": "Tugjec",
+    "kind": "village"
+   },
+   {
+    "name": "Desivojcë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Viti",
+  "lat": 42.3214,
+  "lng": 21.3583,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Beguncë",
+    "kind": "village"
+   },
+   {
+    "name": "Binçë",
+    "kind": "village"
+   },
+   {
+    "name": "Buzovik",
+    "kind": "village"
+   },
+   {
+    "name": "Debelde",
+    "kind": "village"
+   },
+   {
+    "name": "Gjylekar",
+    "kind": "village"
+   },
+   {
+    "name": "Kabash",
+    "kind": "village"
+   },
+   {
+    "name": "Letnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Pozharan",
+    "kind": "village"
+   },
+   {
+    "name": "Ramjan",
+    "kind": "village"
+   },
+   {
+    "name": "Sadovinë e Jerlive",
+    "kind": "village"
+   },
+   {
+    "name": "Smirë",
+    "kind": "village"
+   },
+   {
+    "name": "Tërstenik",
+    "kind": "village"
+   },
+   {
+    "name": "Zhiti",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Deçan",
+  "lat": 42.5402,
+  "lng": 20.2879,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Isniq",
+    "kind": "village"
+   },
+   {
+    "name": "Dranoc",
+    "kind": "village"
+   },
+   {
+    "name": "Gllogjan",
+    "kind": "village"
+   },
+   {
+    "name": "Irzniq",
+    "kind": "village"
+   },
+   {
+    "name": "Lloqan",
+    "kind": "village"
+   },
+   {
+    "name": "Lluka e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Lumbardh",
+    "kind": "village"
+   },
+   {
+    "name": "Lëbushë",
+    "kind": "village"
+   },
+   {
+    "name": "Papraqan",
+    "kind": "village"
+   },
+   {
+    "name": "Prilep",
+    "kind": "village"
+   },
+   {
+    "name": "Strellc i Epërm",
+    "kind": "village"
+   },
+   {
+    "name": "Strellc i Ulët",
+    "kind": "village"
+   },
+   {
+    "name": "Baballoq",
+    "kind": "village"
+   },
+   {
+    "name": "Beleg",
+    "kind": "village"
+   },
+   {
+    "name": "Carrabreg",
+    "kind": "village"
+   },
+   {
+    "name": "Gramaçel",
+    "kind": "village"
+   },
+   {
+    "name": "Kodrali",
+    "kind": "village"
+   },
+   {
+    "name": "Maznik",
+    "kind": "village"
+   },
+   {
+    "name": "Rastavicë",
+    "kind": "village"
+   },
+   {
+    "name": "Voksh",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Istog",
+  "lat": 42.7808,
+  "lng": 20.4875,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Banjë",
+    "kind": "village"
+   },
+   {
+    "name": "Cërcë",
+    "kind": "village"
+   },
+   {
+    "name": "Dobrushë",
+    "kind": "village"
+   },
+   {
+    "name": "Gurrakoc",
+    "kind": "village"
+   },
+   {
+    "name": "Kashicë",
+    "kind": "village"
+   },
+   {
+    "name": "Lubovë",
+    "kind": "village"
+   },
+   {
+    "name": "Llukavc i Thatë",
+    "kind": "village"
+   },
+   {
+    "name": "Rakosh",
+    "kind": "village"
+   },
+   {
+    "name": "Shushicë",
+    "kind": "village"
+   },
+   {
+    "name": "Vrellë",
+    "kind": "village"
+   },
+   {
+    "name": "Zallq",
+    "kind": "village"
+   },
+   {
+    "name": "Zhakovë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Klinë",
+  "lat": 42.6217,
+  "lng": 20.5778,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Budisalc",
+    "kind": "village"
+   },
+   {
+    "name": "Deiq",
+    "kind": "village"
+   },
+   {
+    "name": "Dollc",
+    "kind": "village"
+   },
+   {
+    "name": "Drsnik",
+    "kind": "village"
+   },
+   {
+    "name": "Gjurgjevik",
+    "kind": "village"
+   },
+   {
+    "name": "Grabanicë",
+    "kind": "village"
+   },
+   {
+    "name": "Jashanicë",
+    "kind": "village"
+   },
+   {
+    "name": "Kërnicë",
+    "kind": "village"
+   },
+   {
+    "name": "Kpuz",
+    "kind": "village"
+   },
+   {
+    "name": "Rudicë",
+    "kind": "village"
+   },
+   {
+    "name": "Siqevë",
+    "kind": "village"
+   },
+   {
+    "name": "Shtupel",
+    "kind": "village"
+   },
+   {
+    "name": "Volljakë",
+    "kind": "village"
+   },
+   {
+    "name": "Zajm",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Skenderaj",
+  "lat": 42.7467,
+  "lng": 20.7886,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Prekaz i Epërm",
+    "kind": "village"
+   },
+   {
+    "name": "Prekaz i Poshtëm",
+    "kind": "village"
+   },
+   {
+    "name": "Açarevë",
+    "kind": "village"
+   },
+   {
+    "name": "Klinë e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Likovc",
+    "kind": "village"
+   },
+   {
+    "name": "Llaushë",
+    "kind": "village"
+   },
+   {
+    "name": "Polac",
+    "kind": "village"
+   },
+   {
+    "name": "Qirez",
+    "kind": "village"
+   },
+   {
+    "name": "Runik",
+    "kind": "village"
+   },
+   {
+    "name": "Turiçec",
+    "kind": "village"
+   },
+   {
+    "name": "Vojnikë",
+    "kind": "village"
+   },
+   {
+    "name": "Kopiliq",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Dragash",
+  "lat": 42.0625,
+  "lng": 20.6533,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Brod",
+    "kind": "village"
+   },
+   {
+    "name": "Restelicë",
+    "kind": "village"
+   },
+   {
+    "name": "Bresanë",
+    "kind": "village"
+   },
+   {
+    "name": "Buzez",
+    "kind": "village"
+   },
+   {
+    "name": "Kuk",
+    "kind": "village"
+   },
+   {
+    "name": "Kosavë",
+    "kind": "village"
+   },
+   {
+    "name": "Kukaj",
+    "kind": "village"
+   },
+   {
+    "name": "Leshtan",
+    "kind": "village"
+   },
+   {
+    "name": "Plava",
+    "kind": "village"
+   },
+   {
+    "name": "Pllajnik",
+    "kind": "village"
+   },
+   {
+    "name": "Rapçë",
+    "kind": "village"
+   },
+   {
+    "name": "Zgatar",
+    "kind": "village"
+   },
+   {
+    "name": "Zym i Hasit",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Shtime",
+  "lat": 42.4331,
+  "lng": 21.0397,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Belinc",
+    "kind": "village"
+   },
+   {
+    "name": "Davidovc",
+    "kind": "village"
+   },
+   {
+    "name": "Gjurkoc",
+    "kind": "village"
+   },
+   {
+    "name": "Godanc",
+    "kind": "village"
+   },
+   {
+    "name": "Muzeqinë",
+    "kind": "village"
+   },
+   {
+    "name": "Petrovë",
+    "kind": "village"
+   },
+   {
+    "name": "Rashincë",
+    "kind": "village"
+   },
+   {
+    "name": "Reka",
+    "kind": "village"
+   },
+   {
+    "name": "Topillë",
+    "kind": "village"
+   },
+   {
+    "name": "Vojnovc",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Kaçanik",
+  "lat": 42.2319,
+  "lng": 21.2594,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Biçec",
+    "kind": "village"
+   },
+   {
+    "name": "Doganaj",
+    "kind": "village"
+   },
+   {
+    "name": "Dubravë",
+    "kind": "village"
+   },
+   {
+    "name": "Ivajë",
+    "kind": "village"
+   },
+   {
+    "name": "Kovaçec",
+    "kind": "village"
+   },
+   {
+    "name": "Nikë",
+    "kind": "village"
+   },
+   {
+    "name": "Runjevë",
+    "kind": "village"
+   },
+   {
+    "name": "Sllatinë",
+    "kind": "village"
+   },
+   {
+    "name": "Stagovë",
+    "kind": "village"
+   },
+   {
+    "name": "Strazhë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Obiliq",
+  "lat": 42.6869,
+  "lng": 21.0703,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Babimoc",
+    "kind": "village"
+   },
+   {
+    "name": "Bivoljak",
+    "kind": "village"
+   },
+   {
+    "name": "Breznicë",
+    "kind": "village"
+   },
+   {
+    "name": "Hamidi",
+    "kind": "village"
+   },
+   {
+    "name": "Lajthishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Mazgit",
+    "kind": "village"
+   },
+   {
+    "name": "Milloshevë",
+    "kind": "village"
+   },
+   {
+    "name": "Plemetin",
+    "kind": "village"
+   },
+   {
+    "name": "Sibovc",
+    "kind": "village"
+   },
+   {
+    "name": "Shipitulë",
+    "kind": "village"
+   },
+   {
+    "name": "Hade",
+    "kind": "village"
+   },
+   {
+    "name": "Dardhishtë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Graçanicë",
+  "lat": 42.6,
+  "lng": 21.1933,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Llapllasellë",
+    "kind": "village"
+   },
+   {
+    "name": "Badovc",
+    "kind": "village"
+   },
+   {
+    "name": "Ajvalia",
+    "kind": "village"
+   },
+   {
+    "name": "Preoc",
+    "kind": "village"
+   },
+   {
+    "name": "Çagllavicë",
+    "kind": "village"
+   },
+   {
+    "name": "Gushtericë e Epërme",
+    "kind": "village"
+   },
+   {
+    "name": "Lepinë",
+    "kind": "village"
+   },
+   {
+    "name": "Sushicë",
+    "kind": "village"
+   },
+   {
+    "name": "Skullan",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Junik",
+  "lat": 42.4758,
+  "lng": 20.2772,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Gjocaj",
+    "kind": "village"
+   },
+   {
+    "name": "Jasiq",
+    "kind": "village"
+   },
+   {
+    "name": "Shkugëz",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Mamushë",
+  "lat": 42.3308,
+  "lng": 20.7269,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   }
+  ]
+ },
+ {
+  "name": "Hani i Elezit",
+  "lat": 42.15,
+  "lng": 21.2967,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Dimcë",
+    "kind": "village"
+   },
+   {
+    "name": "Gorancë",
+    "kind": "village"
+   },
+   {
+    "name": "Paldenicë",
+    "kind": "village"
+   },
+   {
+    "name": "Seçishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Dermjak",
+    "kind": "village"
+   },
+   {
+    "name": "Rezallë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Novobërdë",
+  "lat": 42.6159,
+  "lng": 21.4341,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Bostan",
+    "kind": "village"
+   },
+   {
+    "name": "Llabjan",
+    "kind": "village"
+   },
+   {
+    "name": "Koretishtë",
+    "kind": "village"
+   },
+   {
+    "name": "Manishincë",
+    "kind": "village"
+   },
+   {
+    "name": "Prekoc",
+    "kind": "village"
+   },
+   {
+    "name": "Tirincë",
+    "kind": "village"
+   },
+   {
+    "name": "Zebincë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Kllokot",
+  "lat": 42.3714,
+  "lng": 21.3744,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Vërbovc",
+    "kind": "village"
+   },
+   {
+    "name": "Grançar",
+    "kind": "village"
+   },
+   {
+    "name": "Mogillë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Partesh",
+  "lat": 42.4019,
+  "lng": 21.4336,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Budrigë e Poshtme",
+    "kind": "village"
+   },
+   {
+    "name": "Pasjak",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Ranillug",
+  "lat": 42.4922,
+  "lng": 21.5989,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Ropotovë e Vogël",
+    "kind": "village"
+   },
+   {
+    "name": "Glogovc",
+    "kind": "village"
+   },
+   {
+    "name": "Bozhevc",
+    "kind": "village"
+   },
+   {
+    "name": "Domorovc",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Shtërpcë",
+  "lat": 42.2394,
+  "lng": 21.0272,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Brezovica",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Firajë",
+    "kind": "village"
+   },
+   {
+    "name": "Gotovushë",
+    "kind": "village"
+   },
+   {
+    "name": "Jazhincë",
+    "kind": "village"
+   },
+   {
+    "name": "Sevce",
+    "kind": "village"
+   },
+   {
+    "name": "Viça",
+    "kind": "village"
+   },
+   {
+    "name": "Berevcë",
+    "kind": "village"
+   },
+   {
+    "name": "Koshtanjevë",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Zubin Potok",
+  "lat": 42.9144,
+  "lng": 20.6897,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Çabër",
+    "kind": "village"
+   },
+   {
+    "name": "Zupçe",
+    "kind": "village"
+   },
+   {
+    "name": "Jagnjenica",
+    "kind": "village"
+   },
+   {
+    "name": "Brnjak",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Zveçan",
+  "lat": 42.9075,
+  "lng": 20.8403,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Banjska",
+    "kind": "village"
+   },
+   {
+    "name": "Lipë",
+    "kind": "village"
+   },
+   {
+    "name": "Zhazhë",
+    "kind": "village"
+   },
+   {
+    "name": "Valac",
+    "kind": "village"
+   }
+  ]
+ },
+ {
+  "name": "Leposaviq",
+  "lat": 43.1039,
+  "lng": 20.8028,
+  "places": [
+   {
+    "name": "Qendra",
+    "kind": "neighbourhood"
+   },
+   {
+    "name": "Sočanica",
+    "kind": "village"
+   },
+   {
+    "name": "Lešak",
+    "kind": "village"
+   },
+   {
+    "name": "Dren",
+    "kind": "village"
+   },
+   {
+    "name": "Bistrica",
+    "kind": "village"
+   },
+   {
+    "name": "Belo Brdo",
+    "kind": "village"
+   }
+  ]
+ }
+]

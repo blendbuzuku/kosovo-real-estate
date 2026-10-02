@@ -43,8 +43,6 @@ public class TokenService(IOptions<JwtOptions> options, TimeProvider clock)
 public static class Roles
 {
     public const string Admin = nameof(UserRole.Admin);
-    /// <summary>Roles allowed to post listings.</summary>
-    public const string Posters = nameof(UserRole.Owner) + "," + nameof(UserRole.Agency) + "," + nameof(UserRole.Admin);
 }
 
 public static class ClaimsPrincipalExtensions

@@ -19,7 +19,7 @@ public record ReportDto(
     Guid Id, Guid ListingId, string ListingTitle, ListingStatus ListingStatus, ReportReason Reason,
     string? Comment, string ReporterEmail, ReportStatus Status, DateTimeOffset CreatedAt, int OpenReportsOnListing);
 
-public record AdminStatsDto(int PendingReview, int Active, int OpenReports, int Users, int Agencies);
+public record AdminStatsDto(int PendingReview, int Active, int OpenReports, int Users, int Businesses);
 
 [ApiController]
 [Authorize(Roles = Roles.Admin)]
@@ -33,7 +33,7 @@ public class AdminController(
         await db.Listings.CountAsync(l => l.Status == ListingStatus.Active, ct),
         await db.ListingReports.CountAsync(r => r.Status == ReportStatus.Open, ct),
         await db.Users.CountAsync(ct),
-        await db.Agencies.CountAsync(ct));
+        await db.Businesses.CountAsync(ct));
 
     /// <summary>The review queue, oldest submission first.</summary>
     [HttpGet("listings")]

@@ -2,6 +2,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using RealEstate.Api.Data;
 using RealEstate.Api.Domain;
 
 namespace RealEstate.Api.Features.Listings;
@@ -12,41 +13,40 @@ public static class ListingQuery
 
     public static Point PointAt(double lat, double lng) => Geo.CreatePoint(new Coordinate(lng, lat));
 
+    /// <summary>Reads "f.rooms.min=2"-style query parameters into the criteria's field filters.</summary>
+    public static ListingSearchCriteria WithFieldFilters(this ListingSearchCriteria c, IQueryCollection query)
+    {
+        var filters = query
+            .Where(q => q.Key.StartsWith("f.", StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(q.Value))
+            .ToDictionary(q => q.Key[2..], q => q.Value.ToString());
+        return filters.Count == 0 ? c : c with { F = filters };
+    }
+
     /// <summary>Applies every filter in the criteria. Status is left to the caller.</summary>
     public static IQueryable<Listing> Filter(this IQueryable<Listing> q, ListingSearchCriteria c)
     {
+        if (!string.IsNullOrEmpty(c.Category)) q = q.Where(l => l.Category == c.Category);
+        else if (!string.IsNullOrEmpty(c.Vertical))
+        {
+            var keys = Categories.InVertical(c.Vertical).Select(x => x.Key).ToList();
+            q = q.Where(l => keys.Contains(l.Category));
+        }
         if (c.DealType is { } deal) q = q.Where(l => l.DealType == deal);
-        if (c.PropertyType is { } type) q = q.Where(l => l.PropertyType == type);
-        if (!string.IsNullOrWhiteSpace(c.City)) q = q.Where(l => l.City == c.City);
-        if (!string.IsNullOrWhiteSpace(c.Neighborhood)) q = q.Where(l => l.Neighborhood == c.Neighborhood);
+        if (!string.IsNullOrWhiteSpace(c.Municipality)) q = q.Where(l => l.Municipality == c.Municipality);
+        if (!string.IsNullOrWhiteSpace(c.Place)) q = q.Where(l => l.Place == c.Place);
         if (!string.IsNullOrWhiteSpace(c.Q))
         {
             var pattern = $"%{EscapeLike(c.Q.Trim())}%";
             q = q.Where(l => EF.Functions.ILike(l.Title, pattern)
                              || EF.Functions.ILike(l.Description, pattern)
-                             || (l.Neighborhood != null && EF.Functions.ILike(l.Neighborhood, pattern))
+                             || (l.Place != null && EF.Functions.ILike(l.Place, pattern))
                              || (l.Address != null && EF.Functions.ILike(l.Address, pattern)));
         }
 
         if (c.MinPrice is { } minPrice) q = q.Where(l => l.PriceEur >= minPrice);
         if (c.MaxPrice is { } maxPrice) q = q.Where(l => l.PriceEur <= maxPrice);
-        if (c.MinArea is { } minArea) q = q.Where(l => l.AreaM2 >= minArea);
-        if (c.MaxArea is { } maxArea) q = q.Where(l => l.AreaM2 <= maxArea);
-        if (c.MinRooms is { } minRooms) q = q.Where(l => l.Rooms >= minRooms);
-        if (c.MaxRooms is { } maxRooms) q = q.Where(l => l.Rooms <= maxRooms);
-        if (c.MinFloor is { } minFloor) q = q.Where(l => l.Floor >= minFloor);
-        if (c.MaxFloor is { } maxFloor) q = q.Where(l => l.Floor <= maxFloor);
-        if (c.MinYearBuilt is { } minYear) q = q.Where(l => l.YearBuilt >= minYear);
-        if (c.Heating is { } heating) q = q.Where(l => l.Heating == heating);
-        if (c.HasParking is { } parking) q = q.Where(l => l.HasParking == parking);
-        if (c.IsFurnished is { } furnished) q = q.Where(l => l.IsFurnished == furnished);
-        if (c.HasElevator is { } elevator) q = q.Where(l => l.HasElevator == elevator);
-
-        if (c.LegalizedOnly == true)
-            q = q.Where(l => l.Legal.Legalization == LegalizationStatus.Legalized
-                             || l.Legal.Legalization == LegalizationStatus.NotRequired);
-        if (c.HasCadastreCertificate is { } cadastre) q = q.Where(l => l.Legal.HasCadastreCertificate == cadastre);
-        if (c.HasConstructionPermit is { } permit) q = q.Where(l => l.Legal.HasConstructionPermit == permit);
+        if (c.Seller == SellerType.Business) q = q.Where(l => l.Owner.Business != null);
+        if (c.Seller == SellerType.Private) q = q.Where(l => l.Owner.Business == null);
 
         if (c is { Lat: { } lat, Lng: { } lng, RadiusKm: { } km } && km > 0)
         {
@@ -58,9 +58,52 @@ public static class ListingQuery
         if (TryParseBbox(c.Bbox, out var box))
             q = q.Where(l => l.Location.Intersects(box));
 
-        if (c.AgencyId is { } agencyId) q = q.Where(l => l.Owner.Agency != null && l.Owner.Agency.Id == agencyId);
+        if (c.BusinessId is { } businessId) q = q.Where(l => l.Owner.Business != null && l.Owner.Business.Id == businessId);
         if (c.OwnerId is { } ownerId) q = q.Where(l => l.OwnerId == ownerId);
 
+        if (c.F is { Count: > 0 }) q = ApplyFieldFilters(q, c);
+        return q;
+    }
+
+    /// <summary>
+    /// Field filters only apply to fields the searched categories actually have; unknown keys are
+    /// ignored so an old saved search never breaks.
+    /// </summary>
+    private static IQueryable<Listing> ApplyFieldFilters(IQueryable<Listing> q, ListingSearchCriteria c)
+    {
+        List<CategoryDef> categories = Categories.Find(c.Category) is { } one ? [one] : Categories.InVertical(c.Vertical).ToList();
+        FieldDef? FieldFor(string key) => categories.Select(cat => cat.Field(key)).FirstOrDefault(f => f is not null);
+
+        foreach (var (rawKey, value) in c.F!)
+        {
+            var dot = rawKey.LastIndexOf('.');
+            var (key, bound) = dot > 0 && rawKey[(dot + 1)..] is "min" or "max" ? (rawKey[..dot], rawKey[(dot + 1)..]) : (rawKey, null);
+            var field = FieldFor(key);
+            if (field is null || field.Filter == FilterKind.None) continue;
+
+            if (field.Type is FieldType.Number or FieldType.Integer or FieldType.Year)
+            {
+                if (!decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var n)) continue;
+                q = bound == "max"
+                    ? q.Where(l => Attr.Num(l.Attributes, key) <= n)
+                    : q.Where(l => Attr.Num(l.Attributes, key) >= n);
+            }
+            else if (field.Filter == FilterKind.Contains)
+            {
+                var pattern = $"%{EscapeLike(value.Trim())}%";
+                q = q.Where(l => EF.Functions.ILike(Attr.Text(l.Attributes, key)!, pattern));
+            }
+            else if (field.Type == FieldType.Boolean)
+            {
+                var wanted = value.Equals("true", StringComparison.OrdinalIgnoreCase) ? "true" : "false";
+                q = q.Where(l => Attr.Text(l.Attributes, key) == wanted);
+            }
+            else
+            {
+                var values = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                q = q.Where(l => values.Contains(Attr.Text(l.Attributes, key)!));
+            }
+        }
         return q;
     }
 
@@ -68,8 +111,11 @@ public static class ListingQuery
     {
         ListingSort.PriceAsc => q.OrderBy(l => l.PriceEur).ThenByDescending(l => l.PublishedAt),
         ListingSort.PriceDesc => q.OrderByDescending(l => l.PriceEur).ThenByDescending(l => l.PublishedAt),
-        ListingSort.PricePerM2Asc => q.OrderBy(l => l.PricePerM2).ThenByDescending(l => l.PublishedAt),
-        ListingSort.PricePerM2Desc => q.OrderByDescending(l => l.PricePerM2).ThenByDescending(l => l.PublishedAt),
+        ListingSort.PricePerM2Asc => q.OrderBy(l => l.PricePerM2 == null).ThenBy(l => l.PricePerM2).ThenByDescending(l => l.PublishedAt),
+        ListingSort.YearDesc => q.OrderBy(l => Attr.Num(l.Attributes, "year") == null)
+            .ThenByDescending(l => Attr.Num(l.Attributes, "year")).ThenByDescending(l => l.PublishedAt),
+        ListingSort.MileageAsc => q.OrderBy(l => Attr.Num(l.Attributes, "mileageKm") == null)
+            .ThenBy(l => Attr.Num(l.Attributes, "mileageKm")).ThenByDescending(l => l.PublishedAt),
         _ => q.OrderByDescending(l => l.PublishedAt).ThenByDescending(l => l.CreatedAt)
     };
 

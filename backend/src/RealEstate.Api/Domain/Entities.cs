@@ -12,72 +12,52 @@ public class User
     public UserRole Role { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public Agency? Agency { get; set; }
+    public Business? Business { get; set; }
 }
 
-public class Agency
+/// <summary>Public profile for agencies, developers, car dealers and rent-a-car companies.</summary>
+public class Business
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid UserId { get; set; }
     public User User { get; set; } = null!;
     public required string Slug { get; set; }
     public required string Name { get; set; }
+    public BusinessKind Kind { get; set; }
     public string? Description { get; set; }
     public string? Website { get; set; }
-    public string? City { get; set; }
-    public string? LogoKey { get; set; }
+    public string? Municipality { get; set; }
+    public string? Address { get; set; }
 }
 
 /// <summary>
-/// Legal paperwork for the property. Kosovo buyers care a lot about this, since many
-/// buildings were put up without permits and only later (or never) legalized.
+/// One ad in any category. The fields every ad has are columns; the category's own fields
+/// (rooms, mileage, legal status…) live in <see cref="Attributes"/> as jsonb, validated against
+/// <see cref="Categories"/>.
 /// </summary>
-public class LegalStatus
-{
-    /// <summary>Leje ndërtimi.</summary>
-    public bool? HasConstructionPermit { get; set; }
-
-    /// <summary>Certifikata e pronësisë / fletë poseduese from the cadastre.</summary>
-    public bool? HasCadastreCertificate { get; set; }
-
-    public LegalizationStatus Legalization { get; set; } = LegalizationStatus.Unknown;
-
-    public string? Notes { get; set; }
-}
-
 public partial class Listing
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid OwnerId { get; set; }
     public User Owner { get; set; } = null!;
 
+    public required string Category { get; set; }
+    public DealType DealType { get; set; }
     public required string Title { get; set; }
     public required string Description { get; set; }
-    public PropertyType PropertyType { get; set; }
-    public DealType DealType { get; set; }
 
     public decimal PriceEur { get; set; }
-    public decimal AreaM2 { get; set; }
-    /// <summary>Stored generated column, so sorting by €/m² can use an index.</summary>
+    public bool Negotiable { get; set; }
+    /// <summary>Stored generated column from the areaM2 attribute, so €/m² sorting is cheap.</summary>
     public decimal? PricePerM2 { get; private set; }
 
-    public int? Rooms { get; set; }
-    public int? Bathrooms { get; set; }
-    public int? Floor { get; set; }
-    public int? TotalFloors { get; set; }
-    public int? YearBuilt { get; set; }
-    public HeatingType Heating { get; set; }
-    public bool HasParking { get; set; }
-    public bool IsFurnished { get; set; }
-    public bool HasElevator { get; set; }
-    public bool HasBalcony { get; set; }
+    /// <summary>Category-specific values as a JSON object, e.g. {"areaM2":72,"rooms":2,"legalization":"Legalized"}.</summary>
+    public string Attributes { get; set; } = "{}";
 
-    public required string City { get; set; }
-    public string? Neighborhood { get; set; }
+    public required string Municipality { get; set; }
+    public string? Place { get; set; }
     public string? Address { get; set; }
     public required Point Location { get; set; }
-
-    public LegalStatus Legal { get; set; } = new();
 
     public ListingStatus Status { get; set; } = ListingStatus.Draft;
     public string? ModerationNote { get; set; }
@@ -148,6 +128,18 @@ public class Message
     public required string Body { get; set; }
     public DateTimeOffset SentAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ReadAt { get; set; }
+
+    /// <summary>Set when the message is a booking request for a per-night or per-day rental.</summary>
+    public BookingRequest? Booking { get; set; }
+}
+
+public class BookingRequest
+{
+    public DateOnly From { get; set; }
+    public DateOnly To { get; set; }
+    public int? Guests { get; set; }
+    public int Units { get; set; }
+    public decimal TotalEur { get; set; }
 }
 
 public class ListingReport

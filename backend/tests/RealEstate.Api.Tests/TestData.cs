@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using RealEstate.Api.Domain;
 using RealEstate.Api.Features.Listings;
 using SixLabors.ImageSharp;
@@ -9,28 +10,52 @@ namespace RealEstate.Api.Tests;
 
 public static class TestData
 {
+    public static Dictionary<string, JsonElement> Attrs(object values) =>
+        JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(values))!;
+
     public static ListingUpsertRequest Apartment(
-        string city = "Prishtinë", decimal price = 85_000, decimal area = 70, double lat = 42.6629, double lng = 21.1655,
-        DealType deal = DealType.Sale, LegalizationStatus legalization = LegalizationStatus.Legalized, int rooms = 2) => new()
+        string municipality = "Prishtinë", decimal price = 85_000, decimal area = 70, double? lat = 42.6629, double? lng = 21.1655,
+        DealType deal = DealType.Sale, string legalization = "Legalized", int rooms = 2, string? place = "Qendra") => new()
     {
-        Title = $"Apartment {rooms} rooms in {city}",
-        Description = "Sunny apartment close to the centre, recently renovated, with a view over the park.",
-        PropertyType = PropertyType.Apartment,
+        Category = "apartments",
         DealType = deal,
+        Title = $"Apartment {rooms} rooms in {municipality}",
+        Description = "Sunny apartment close to the centre, recently renovated, with a view over the park.",
         PriceEur = price,
-        AreaM2 = area,
-        Rooms = rooms,
-        Floor = 3,
-        TotalFloors = 8,
-        YearBuilt = 2015,
-        Heating = HeatingType.District,
-        HasParking = true,
-        HasElevator = true,
-        City = city,
-        Neighborhood = "Qendra",
+        Municipality = municipality,
+        Place = place,
         Lat = lat,
         Lng = lng,
-        Legal = new LegalStatusDto(true, true, legalization, null)
+        Attributes = Attrs(new
+        {
+            areaM2 = area, rooms, floor = 3, totalFloors = 8, yearBuilt = 2015, heating = "District",
+            parking = true, elevator = true, legalization, hasCadastreCertificate = true, hasConstructionPermit = true
+        })
+    };
+
+    public static ListingUpsertRequest Stay(decimal pricePerNight = 50, int maxGuests = 4, int minNights = 2) => new()
+    {
+        Category = "apartments",
+        DealType = DealType.RentNightly,
+        Title = "Old town apartment for short stays",
+        Description = "Two bedrooms under the fortress, self check-in and free parking.",
+        PriceEur = pricePerNight,
+        Municipality = "Prizren",
+        Place = "Marash",
+        Attributes = Attrs(new { areaM2 = 65, rooms = 3, maxGuests, beds = 3, minNights, wifi = true })
+    };
+
+    public static ListingUpsertRequest Car(
+        string make = "Volkswagen", string model = "Golf 7 1.6 TDI", int year = 2016, int mileageKm = 160_000,
+        string fuel = "Diesel", decimal price = 11_500, DealType deal = DealType.Sale) => new()
+    {
+        Category = "cars",
+        DealType = deal,
+        Title = $"{make} {model} {year}",
+        Description = "Imported from Germany, customs cleared, full service history.",
+        PriceEur = price,
+        Municipality = "Ferizaj",
+        Attributes = Attrs(new { make, model, year, mileageKm, fuel, transmission = "Manual", customsCleared = true })
     };
 
     public static byte[] Jpeg(int width = 2400, int height = 1600)

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Time.Testing;
 using Npgsql;
 using RealEstate.Api.Data;
+using RealEstate.Api.Domain;
 using RealEstate.Api.Features.Accounts;
 using RealEstate.Api.Infrastructure;
 
@@ -110,18 +111,21 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         return client;
     }
 
-    public async Task<(HttpClient Client, UserDto User)> Register(string role, string? agencyName = null, string? phone = "+383 44 000 111")
+    /// <summary>Registers a personal account, or a business account when <paramref name="businessKind"/> is given.</summary>
+    public async Task<(HttpClient Client, UserDto User)> Register(
+        BusinessKind? businessKind = null, string? businessName = null, string? phone = "+383 44 000 111")
     {
         var client = CreateClient();
-        var email = $"{role.ToLowerInvariant()}-{Guid.NewGuid():N}@test.local";
+        var email = $"user-{Guid.NewGuid():N}@test.local";
         var res = await client.PostAsJsonAsync("/api/auth/register", new
         {
             email,
             password = "Password123!",
-            displayName = $"Test {role}",
+            displayName = "Test user",
             phone,
-            role,
-            agencyName
+            accountType = businessKind is null ? "Personal" : "Business",
+            businessName = businessName ?? (businessKind is null ? null : $"Test {businessKind}"),
+            businessKind = businessKind?.ToString()
         });
         res.EnsureSuccessStatusCode();
         var auth = (await res.Content.ReadFromJsonAsync<AuthResponse>(Json))!;

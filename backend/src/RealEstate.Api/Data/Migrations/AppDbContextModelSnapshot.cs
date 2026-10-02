@@ -24,24 +24,33 @@ namespace RealEstate.Api.Data.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("RealEstate.Api.Domain.Agency", b =>
+            modelBuilder.Entity("RealEstate.Api.Domain.Business", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<string>("City")
-                        .HasColumnType("text")
-                        .HasColumnName("city");
+                    b.Property<string>("Address")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("address");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
-                    b.Property<string>("LogoKey")
-                        .HasColumnType("text")
-                        .HasColumnName("logo_key");
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Municipality")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("municipality");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -60,21 +69,22 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnName("user_id");
 
                     b.Property<string>("Website")
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("website");
 
                     b.HasKey("Id")
-                        .HasName("pk_agencies");
+                        .HasName("pk_businesses");
 
                     b.HasIndex("Slug")
                         .IsUnique()
-                        .HasDatabaseName("ix_agencies_slug");
+                        .HasDatabaseName("ix_businesses_slug");
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasDatabaseName("ix_agencies_user_id");
+                        .HasDatabaseName("ix_businesses_user_id");
 
-                    b.ToTable("agencies", (string)null);
+                    b.ToTable("businesses", (string)null);
                 });
 
             modelBuilder.Entity("RealEstate.Api.Domain.Conversation", b =>
@@ -155,20 +165,16 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("address");
 
-                    b.Property<decimal>("AreaM2")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("numeric(10,2)")
-                        .HasColumnName("area_m2");
-
-                    b.Property<int?>("Bathrooms")
-                        .HasColumnType("integer")
-                        .HasColumnName("bathrooms");
-
-                    b.Property<string>("City")
+                    b.Property<string>("Attributes")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("city");
+                        .HasColumnType("jsonb")
+                        .HasColumnName("attributes");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("category");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -194,32 +200,6 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiry_reminder_sent_at");
 
-                    b.Property<int?>("Floor")
-                        .HasColumnType("integer")
-                        .HasColumnName("floor");
-
-                    b.Property<bool>("HasBalcony")
-                        .HasColumnType("boolean")
-                        .HasColumnName("has_balcony");
-
-                    b.Property<bool>("HasElevator")
-                        .HasColumnType("boolean")
-                        .HasColumnName("has_elevator");
-
-                    b.Property<bool>("HasParking")
-                        .HasColumnType("boolean")
-                        .HasColumnName("has_parking");
-
-                    b.Property<string>("Heating")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("heating");
-
-                    b.Property<bool>("IsFurnished")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_furnished");
-
                     b.Property<Point>("Location")
                         .IsRequired()
                         .HasColumnType("geography (point, 4326)")
@@ -229,10 +209,15 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("moderation_note");
 
-                    b.Property<string>("Neighborhood")
+                    b.Property<string>("Municipality")
+                        .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
-                        .HasColumnName("neighborhood");
+                        .HasColumnName("municipality");
+
+                    b.Property<bool>("Negotiable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("negotiable");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uuid")
@@ -241,6 +226,11 @@ namespace RealEstate.Api.Data.Migrations
                     b.Property<int>("PhoneRevealCount")
                         .HasColumnType("integer")
                         .HasColumnName("phone_reveal_count");
+
+                    b.Property<string>("Place")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("place");
 
                     b.Property<decimal>("PriceEur")
                         .HasPrecision(12, 2)
@@ -252,21 +242,11 @@ namespace RealEstate.Api.Data.Migrations
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("price_per_m2")
-                        .HasComputedColumnSql("round(price_eur / nullif(area_m2, 0), 2)", true);
-
-                    b.Property<string>("PropertyType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("property_type");
+                        .HasComputedColumnSql("round(price_eur / nullif(attr_num(attributes, 'areaM2'), 0), 2)", true);
 
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("published_at");
-
-                    b.Property<int?>("Rooms")
-                        .HasColumnType("integer")
-                        .HasColumnName("rooms");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -284,10 +264,6 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnType("character varying(140)")
                         .HasColumnName("title");
 
-                    b.Property<int?>("TotalFloors")
-                        .HasColumnType("integer")
-                        .HasColumnName("total_floors");
-
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
@@ -296,12 +272,14 @@ namespace RealEstate.Api.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("view_count");
 
-                    b.Property<int?>("YearBuilt")
-                        .HasColumnType("integer")
-                        .HasColumnName("year_built");
-
                     b.HasKey("Id")
                         .HasName("pk_listings");
+
+                    b.HasIndex("Attributes")
+                        .HasDatabaseName("ix_listings_attributes");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Attributes"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Attributes"), new[] { "jsonb_path_ops" });
 
                     b.HasIndex("Location")
                         .HasDatabaseName("ix_listings_location");
@@ -317,8 +295,8 @@ namespace RealEstate.Api.Data.Migrations
                     b.HasIndex("Status", "PublishedAt")
                         .HasDatabaseName("ix_listings_status_published_at");
 
-                    b.HasIndex("Status", "DealType", "PropertyType", "City")
-                        .HasDatabaseName("ix_listings_status_deal_type_property_type_city");
+                    b.HasIndex("Status", "Category", "DealType", "Municipality")
+                        .HasDatabaseName("ix_listings_status_category_deal_type_municipality");
 
                     b.ToTable("listings", (string)null);
                 });
@@ -547,14 +525,14 @@ namespace RealEstate.Api.Data.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("RealEstate.Api.Domain.Agency", b =>
+            modelBuilder.Entity("RealEstate.Api.Domain.Business", b =>
                 {
                     b.HasOne("RealEstate.Api.Domain.User", "User")
-                        .WithOne("Agency")
-                        .HasForeignKey("RealEstate.Api.Domain.Agency", "UserId")
+                        .WithOne("Business")
+                        .HasForeignKey("RealEstate.Api.Domain.Business", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_agencies_users_user_id");
+                        .HasConstraintName("fk_businesses_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -617,43 +595,6 @@ namespace RealEstate.Api.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_listings_users_owner_id");
 
-                    b.OwnsOne("RealEstate.Api.Domain.LegalStatus", "Legal", b1 =>
-                        {
-                            b1.Property<Guid>("ListingId")
-                                .HasColumnType("uuid")
-                                .HasColumnName("id");
-
-                            b1.Property<bool?>("HasCadastreCertificate")
-                                .HasColumnType("boolean")
-                                .HasColumnName("legal_has_cadastre_certificate");
-
-                            b1.Property<bool?>("HasConstructionPermit")
-                                .HasColumnType("boolean")
-                                .HasColumnName("legal_has_construction_permit");
-
-                            b1.Property<string>("Legalization")
-                                .IsRequired()
-                                .HasMaxLength(32)
-                                .HasColumnType("character varying(32)")
-                                .HasColumnName("legal_legalization");
-
-                            b1.Property<string>("Notes")
-                                .HasMaxLength(1000)
-                                .HasColumnType("character varying(1000)")
-                                .HasColumnName("legal_notes");
-
-                            b1.HasKey("ListingId");
-
-                            b1.ToTable("listings");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ListingId")
-                                .HasConstraintName("fk_listings_listings_id");
-                        });
-
-                    b.Navigation("Legal")
-                        .IsRequired();
-
                     b.Navigation("Owner");
                 });
 
@@ -687,6 +628,44 @@ namespace RealEstate.Api.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_messages_conversations_conversation_id");
+
+                    b.OwnsOne("RealEstate.Api.Domain.BookingRequest", "Booking", b1 =>
+                        {
+                            b1.Property<Guid>("MessageId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("id");
+
+                            b1.Property<DateOnly>("From")
+                                .HasColumnType("date")
+                                .HasColumnName("booking_from");
+
+                            b1.Property<int?>("Guests")
+                                .HasColumnType("integer")
+                                .HasColumnName("booking_guests");
+
+                            b1.Property<DateOnly>("To")
+                                .HasColumnType("date")
+                                .HasColumnName("booking_to");
+
+                            b1.Property<decimal>("TotalEur")
+                                .HasPrecision(12, 2)
+                                .HasColumnType("numeric(12,2)")
+                                .HasColumnName("booking_total_eur");
+
+                            b1.Property<int>("Units")
+                                .HasColumnType("integer")
+                                .HasColumnName("booking_units");
+
+                            b1.HasKey("MessageId");
+
+                            b1.ToTable("messages");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MessageId")
+                                .HasConstraintName("fk_messages_messages_id");
+                        });
+
+                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("RealEstate.Api.Domain.SavedSearch", b =>
@@ -713,7 +692,7 @@ namespace RealEstate.Api.Data.Migrations
 
             modelBuilder.Entity("RealEstate.Api.Domain.User", b =>
                 {
-                    b.Navigation("Agency");
+                    b.Navigation("Business");
                 });
 #pragma warning restore 612, 618
         }

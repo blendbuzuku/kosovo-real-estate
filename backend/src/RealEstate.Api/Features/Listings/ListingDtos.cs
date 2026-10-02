@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Api.Domain;
 using RealEstate.Api.Infrastructure;
@@ -7,66 +8,51 @@ namespace RealEstate.Api.Features.Listings;
 
 public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int Total);
 
+public record SellerSummaryDto(string Name, bool IsBusiness, BusinessKind? Kind, string? Slug);
+
 public record ListingSummaryDto(
     Guid Id,
-    string Title,
-    PropertyType PropertyType,
+    string Category,
     DealType DealType,
+    string Title,
     decimal PriceEur,
-    decimal AreaM2,
+    bool Negotiable,
     decimal? PricePerM2,
-    int? Rooms,
-    int? Floor,
-    string City,
-    string? Neighborhood,
+    string Municipality,
+    string? Place,
     double Lat,
     double Lng,
     string? ThumbnailUrl,
     int PhotoCount,
-    LegalizationStatus Legalization,
-    bool? HasCadastreCertificate,
-    string? AgencyName,
+    JsonElement Attributes,
+    SellerSummaryDto Seller,
     ListingStatus Status,
     DateTimeOffset? PublishedAt,
     DateTimeOffset? ExpiresAt);
 
-public record MapPinDto(Guid Id, double Lat, double Lng, decimal PriceEur, DealType DealType, PropertyType PropertyType);
+public record MapPinDto(Guid Id, double Lat, double Lng, decimal PriceEur, DealType DealType, string Category);
 
 public record PhotoDto(Guid Id, string Url, string ThumbnailUrl, int Width, int Height);
 
-public record ListingOwnerDto(Guid Id, string DisplayName, bool IsAgency, string? AgencySlug, string? AgencyName, bool HasPhone);
-
-public record LegalStatusDto(
-    bool? HasConstructionPermit,
-    bool? HasCadastreCertificate,
-    LegalizationStatus Legalization,
-    [MaxLength(1000)] string? Notes);
+public record ListingOwnerDto(
+    Guid Id, string DisplayName, bool HasPhone, DateTimeOffset MemberSince,
+    string? BusinessSlug, string? BusinessName, BusinessKind? BusinessKind);
 
 public record ListingDetailDto(
     Guid Id,
+    string Category,
+    DealType DealType,
     string Title,
     string Description,
-    PropertyType PropertyType,
-    DealType DealType,
     decimal PriceEur,
-    decimal AreaM2,
+    bool Negotiable,
     decimal? PricePerM2,
-    int? Rooms,
-    int? Bathrooms,
-    int? Floor,
-    int? TotalFloors,
-    int? YearBuilt,
-    HeatingType Heating,
-    bool HasParking,
-    bool IsFurnished,
-    bool HasElevator,
-    bool HasBalcony,
-    string City,
-    string? Neighborhood,
+    JsonElement Attributes,
+    string Municipality,
+    string? Place,
     string? Address,
     double Lat,
     double Lng,
-    LegalStatusDto Legal,
     IReadOnlyList<PhotoDto> Photos,
     ListingOwnerDto Owner,
     ListingStatus Status,
@@ -81,29 +67,19 @@ public record ListingDetailDto(
 
 public record ListingUpsertRequest
 {
+    [Required, MaxLength(40)] public string Category { get; init; } = "";
+    public DealType DealType { get; init; }
     [Required, StringLength(140, MinimumLength = 5)] public string Title { get; init; } = "";
     [Required, StringLength(5000, MinimumLength = 20)] public string Description { get; init; } = "";
-    public PropertyType PropertyType { get; init; }
-    public DealType DealType { get; init; }
     [Range(1, 100_000_000)] public decimal PriceEur { get; init; }
-    [Range(1, 1_000_000)] public decimal AreaM2 { get; init; }
-    [Range(0, 50)] public int? Rooms { get; init; }
-    [Range(0, 20)] public int? Bathrooms { get; init; }
-    [Range(-3, 100)] public int? Floor { get; init; }
-    [Range(1, 100)] public int? TotalFloors { get; init; }
-    [Range(1800, 2100)] public int? YearBuilt { get; init; }
-    public HeatingType Heating { get; init; }
-    public bool HasParking { get; init; }
-    public bool IsFurnished { get; init; }
-    public bool HasElevator { get; init; }
-    public bool HasBalcony { get; init; }
-    [Required, MaxLength(64)] public string City { get; init; } = "";
-    [MaxLength(64)] public string? Neighborhood { get; init; }
+    public bool Negotiable { get; init; }
+    [Required, MaxLength(64)] public string Municipality { get; init; } = "";
+    [MaxLength(80)] public string? Place { get; init; }
     [MaxLength(200)] public string? Address { get; init; }
-    // Roughly Kosovo plus a margin, so a swapped lat/lng is caught.
-    [Range(41.5, 43.5)] public double Lat { get; init; }
-    [Range(19.8, 21.9)] public double Lng { get; init; }
-    [Required] public LegalStatusDto Legal { get; init; } = new(null, null, LegalizationStatus.Unknown, null);
+    /// <summary>Exact pin. Optional: without it the ad is placed at the municipality's centre.</summary>
+    [Range(41.5, 43.5)] public double? Lat { get; init; }
+    [Range(19.8, 21.9)] public double? Lng { get; init; }
+    public Dictionary<string, JsonElement>? Attributes { get; init; }
 }
 
 public record ReorderPhotosRequest([Required] IReadOnlyList<Guid> PhotoIds);
@@ -112,25 +88,36 @@ public record PhoneDto(string Phone);
 
 public static class ListingMapping
 {
+    public static JsonElement ParseAttributes(string json)
+    {
+        using var doc = JsonDocument.Parse(string.IsNullOrEmpty(json) ? "{}" : json);
+        return doc.RootElement.Clone();
+    }
+
     /// <summary>Row shape the database can produce in one query; photo URLs are added afterwards.</summary>
-    public record SummaryRow(Listing L, string? ThumbKey, int PhotoCount, string? AgencyName);
+    public record SummaryRow(Listing L, string? ThumbKey, int PhotoCount, string OwnerName, string? BusinessName, BusinessKind? BusinessKind, string? BusinessSlug);
 
     public static IQueryable<SummaryRow> SelectSummaryRows(this IQueryable<Listing> q) =>
         q.Select(l => new SummaryRow(
             l,
             l.Photos.OrderBy(p => p.SortOrder).Select(p => p.ThumbKey).FirstOrDefault(),
             l.Photos.Count,
-            l.Owner.Agency != null ? l.Owner.Agency.Name : null));
+            l.Owner.DisplayName,
+            l.Owner.Business != null ? l.Owner.Business.Name : null,
+            l.Owner.Business != null ? l.Owner.Business.Kind : null,
+            l.Owner.Business != null ? l.Owner.Business.Slug : null));
 
     public static ListingSummaryDto ToSummary(this SummaryRow row, IFileStorage storage)
     {
         var l = row.L;
+        var seller = row.BusinessName is not null
+            ? new SellerSummaryDto(row.BusinessName, true, row.BusinessKind, row.BusinessSlug)
+            : new SellerSummaryDto(row.OwnerName, false, null, null);
         return new ListingSummaryDto(
-            l.Id, l.Title, l.PropertyType, l.DealType, l.PriceEur, l.AreaM2, l.PricePerM2, l.Rooms, l.Floor,
-            l.City, l.Neighborhood, l.Location.Y, l.Location.X,
+            l.Id, l.Category, l.DealType, l.Title, l.PriceEur, l.Negotiable, l.PricePerM2,
+            l.Municipality, l.Place, l.Location.Y, l.Location.X,
             row.ThumbKey is null ? null : storage.GetUrl(row.ThumbKey),
-            row.PhotoCount, l.Legal.Legalization, l.Legal.HasCadastreCertificate,
-            row.AgencyName, l.Status, l.PublishedAt, l.ExpiresAt);
+            row.PhotoCount, ParseAttributes(l.Attributes), seller, l.Status, l.PublishedAt, l.ExpiresAt);
     }
 
     public static async Task<PagedResult<ListingSummaryDto>> ToPageAsync(
@@ -141,36 +128,5 @@ public static class ListingMapping
         var total = await q.CountAsync(ct);
         var rows = await q.Skip((page - 1) * pageSize).Take(pageSize).SelectSummaryRows().ToListAsync(ct);
         return new PagedResult<ListingSummaryDto>(rows.Select(r => r.ToSummary(storage)).ToList(), page, pageSize, total);
-    }
-
-    public static void Apply(this Listing l, ListingUpsertRequest r)
-    {
-        l.Title = r.Title.Trim();
-        l.Description = r.Description.Trim();
-        l.PropertyType = r.PropertyType;
-        l.DealType = r.DealType;
-        l.PriceEur = r.PriceEur;
-        l.AreaM2 = r.AreaM2;
-        l.Rooms = r.Rooms;
-        l.Bathrooms = r.Bathrooms;
-        l.Floor = r.Floor;
-        l.TotalFloors = r.TotalFloors;
-        l.YearBuilt = r.YearBuilt;
-        l.Heating = r.Heating;
-        l.HasParking = r.HasParking;
-        l.IsFurnished = r.IsFurnished;
-        l.HasElevator = r.HasElevator;
-        l.HasBalcony = r.HasBalcony;
-        l.City = r.City.Trim();
-        l.Neighborhood = string.IsNullOrWhiteSpace(r.Neighborhood) ? null : r.Neighborhood.Trim();
-        l.Address = string.IsNullOrWhiteSpace(r.Address) ? null : r.Address.Trim();
-        l.Location = ListingQuery.PointAt(r.Lat, r.Lng);
-        l.Legal = new LegalStatus
-        {
-            HasConstructionPermit = r.Legal.HasConstructionPermit,
-            HasCadastreCertificate = r.Legal.HasCadastreCertificate,
-            Legalization = r.Legal.Legalization,
-            Notes = string.IsNullOrWhiteSpace(r.Legal.Notes) ? null : r.Legal.Notes.Trim()
-        };
     }
 }

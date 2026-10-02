@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using RealEstate.Api.Data;
 using NetTopologySuite.Geometries;
 
 #nullable disable
@@ -12,6 +13,9 @@ namespace RealEstate.Api.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // The attributes functions must exist before the price_per_m2 generated column uses them.
+            migrationBuilder.Sql(Attr.CreateFunctionsSql);
+
             migrationBuilder.AlterDatabase()
                 .Annotation("Npgsql:PostgresExtension:postgis", ",,");
 
@@ -33,23 +37,24 @@ namespace RealEstate.Api.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "agencies",
+                name: "businesses",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     slug = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: false),
                     name = table.Column<string>(type: "character varying(120)", maxLength: 120, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: true),
-                    website = table.Column<string>(type: "text", nullable: true),
-                    city = table.Column<string>(type: "text", nullable: true),
-                    logo_key = table.Column<string>(type: "text", nullable: true)
+                    kind = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
+                    website = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    municipality = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_agencies", x => x.id);
+                    table.PrimaryKey("pk_businesses", x => x.id);
                     table.ForeignKey(
-                        name: "fk_agencies_users_user_id",
+                        name: "fk_businesses_users_user_id",
                         column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -62,31 +67,18 @@ namespace RealEstate.Api.Data.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     owner_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    category = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    deal_type = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     title = table.Column<string>(type: "character varying(140)", maxLength: 140, nullable: false),
                     description = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: false),
-                    property_type = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    deal_type = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     price_eur = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: false),
-                    area_m2 = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: false),
-                    price_per_m2 = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: true, computedColumnSql: "round(price_eur / nullif(area_m2, 0), 2)", stored: true),
-                    rooms = table.Column<int>(type: "integer", nullable: true),
-                    bathrooms = table.Column<int>(type: "integer", nullable: true),
-                    floor = table.Column<int>(type: "integer", nullable: true),
-                    total_floors = table.Column<int>(type: "integer", nullable: true),
-                    year_built = table.Column<int>(type: "integer", nullable: true),
-                    heating = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    has_parking = table.Column<bool>(type: "boolean", nullable: false),
-                    is_furnished = table.Column<bool>(type: "boolean", nullable: false),
-                    has_elevator = table.Column<bool>(type: "boolean", nullable: false),
-                    has_balcony = table.Column<bool>(type: "boolean", nullable: false),
-                    city = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
-                    neighborhood = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: true),
+                    negotiable = table.Column<bool>(type: "boolean", nullable: false),
+                    price_per_m2 = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: true, computedColumnSql: "round(price_eur / nullif(attr_num(attributes, 'areaM2'), 0), 2)", stored: true),
+                    attributes = table.Column<string>(type: "jsonb", nullable: false),
+                    municipality = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    place = table.Column<string>(type: "character varying(80)", maxLength: 80, nullable: true),
                     address = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     location = table.Column<Point>(type: "geography (point, 4326)", nullable: false),
-                    legal_has_construction_permit = table.Column<bool>(type: "boolean", nullable: true),
-                    legal_has_cadastre_certificate = table.Column<bool>(type: "boolean", nullable: true),
-                    legal_legalization = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    legal_notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     status = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     moderation_note = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -247,7 +239,12 @@ namespace RealEstate.Api.Data.Migrations
                     sender_id = table.Column<Guid>(type: "uuid", nullable: false),
                     body = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: false),
                     sent_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                    read_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    read_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    booking_from = table.Column<DateOnly>(type: "date", nullable: true),
+                    booking_to = table.Column<DateOnly>(type: "date", nullable: true),
+                    booking_guests = table.Column<int>(type: "integer", nullable: true),
+                    booking_units = table.Column<int>(type: "integer", nullable: true),
+                    booking_total_eur = table.Column<decimal>(type: "numeric(12,2)", precision: 12, scale: 2, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -261,14 +258,14 @@ namespace RealEstate.Api.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_agencies_slug",
-                table: "agencies",
+                name: "ix_businesses_slug",
+                table: "businesses",
                 column: "slug",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_agencies_user_id",
-                table: "agencies",
+                name: "ix_businesses_user_id",
+                table: "businesses",
                 column: "user_id",
                 unique: true);
 
@@ -309,6 +306,13 @@ namespace RealEstate.Api.Data.Migrations
                 column: "status");
 
             migrationBuilder.CreateIndex(
+                name: "ix_listings_attributes",
+                table: "listings",
+                column: "attributes")
+                .Annotation("Npgsql:IndexMethod", "gin")
+                .Annotation("Npgsql:IndexOperators", new[] { "jsonb_path_ops" });
+
+            migrationBuilder.CreateIndex(
                 name: "ix_listings_location",
                 table: "listings",
                 column: "location")
@@ -320,9 +324,9 @@ namespace RealEstate.Api.Data.Migrations
                 column: "owner_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_listings_status_deal_type_property_type_city",
+                name: "ix_listings_status_category_deal_type_municipality",
                 table: "listings",
-                columns: new[] { "status", "deal_type", "property_type", "city" });
+                columns: new[] { "status", "category", "deal_type", "municipality" });
 
             migrationBuilder.CreateIndex(
                 name: "ix_listings_status_expires_at",
@@ -355,7 +359,7 @@ namespace RealEstate.Api.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "agencies");
+                name: "businesses");
 
             migrationBuilder.DropTable(
                 name: "favorites");
@@ -380,6 +384,8 @@ namespace RealEstate.Api.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "users");
+
+            migrationBuilder.Sql("DROP FUNCTION IF EXISTS attr_num(jsonb, text); DROP FUNCTION IF EXISTS attr_text(jsonb, text);");
         }
     }
 }
