@@ -465,6 +465,12 @@ export class ListingDetailPage {
       this.phone.set(null);
       this.sentConversationId.set(null);
       this.bookingSentId.set(null);
+      this.contactError.set(null);
+      this.reportOpen.set(false);
+      this.reported.set(false);
+      this.shared.set(false);
+      this.fromSig.set('');
+      this.toSig.set('');
       this.api.listing(id).subscribe({
         next: (l) => {
           this.listing.set(l);

@@ -212,7 +212,9 @@ export class FilterPanel {
     const now = new Date().getFullYear();
     const from = Math.max(f.min ?? 1950, 1950);
     const out: number[] = [];
-    for (let y = now; y >= from; y -= y > now - 20 ? 1 : 5) out.push(y);
+    // Every year for the last twenty, then round five-year steps (2005, 2000, 1995…).
+    for (let y = now; y >= Math.max(from, now - 20); y--) out.push(y);
+    for (let y = Math.floor((now - 21) / 5) * 5; y >= from; y -= 5) out.push(y);
     return out;
   }
 

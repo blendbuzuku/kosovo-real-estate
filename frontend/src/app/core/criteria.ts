@@ -14,10 +14,18 @@ const STRING_KEYS = [
   'sort',
 ] as const;
 
+/** Values the API accepts for its enum parameters; anything else in a hand-edited or old URL is dropped. */
+const ALLOWED: Partial<Record<(typeof STRING_KEYS)[number], readonly string[]>> = {
+  vertical: ['property', 'vehicles'],
+  dealType: ['Sale', 'RentMonthly', 'RentNightly', 'RentDaily'],
+  seller: ['Private', 'Business'],
+  sort: ['Newest', 'PriceAsc', 'PriceDesc', 'PricePerM2Asc', 'YearDesc', 'MileageAsc'],
+};
+
 /** Search criteria live in the URL so results can be shared and survive a reload. Field filters are f.<key>. */
 export function criteriaFromParams(p: Params): SearchCriteria {
   const c: Record<string, unknown> = {};
-  for (const k of STRING_KEYS) if (p[k]) c[k] = p[k];
+  for (const k of STRING_KEYS) if (p[k] && (!ALLOWED[k] || ALLOWED[k].includes(p[k]))) c[k] = p[k];
   for (const k of NUMBER_KEYS) {
     const n = Number(p[k]);
     if (p[k] !== undefined && p[k] !== '' && !Number.isNaN(n)) c[k] = n;

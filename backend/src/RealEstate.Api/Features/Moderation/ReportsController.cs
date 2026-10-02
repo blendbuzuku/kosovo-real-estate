@@ -18,7 +18,10 @@ public class ReportsController(AppDbContext db, TimeProvider clock) : Controller
     public async Task<IActionResult> Report(Guid listingId, ReportListingRequest request, CancellationToken ct)
     {
         var userId = User.UserId();
-        if (!await db.Listings.AnyAsync(l => l.Id == listingId && l.Status == ListingStatus.Active, ct)) return NotFound();
+        var ownerId = await db.Listings.Where(l => l.Id == listingId && l.Status == ListingStatus.Active)
+            .Select(l => (Guid?)l.OwnerId).FirstOrDefaultAsync(ct);
+        if (ownerId is null) return NotFound();
+        if (ownerId == userId) return Problem("You can't report your own ad.", statusCode: 400);
 
         // One open report per user and listing; reporting again just updates it.
         var existing = await db.ListingReports.FirstOrDefaultAsync(

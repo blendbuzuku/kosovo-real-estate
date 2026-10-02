@@ -648,6 +648,7 @@ button.link {
 @media (max-width: 640px) {
   :root {
     --header-h: 56px;
+    --tabbar-h: 66px;
   }
   .header-actions .icon-link,
   .post-btn span {
@@ -673,7 +674,10 @@ button.link {
     background: rgb(255 255 255 / 96%);
     backdrop-filter: blur(10px);
     border-top: 1px solid var(--line);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+    align-items: center;
+    padding: 0 4px env(safe-area-inset-bottom);
     a {
       position: relative;
       display: grid;
@@ -2662,7 +2666,7 @@ app-listing-card.highlight .listing-card {
 // The ad page's contact bar sits just above the phone tab bar.
 @media (max-width: 640px) {
   .mobile-cta {
-    bottom: calc(58px + env(safe-area-inset-bottom));
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
     padding-bottom: 10px !important;
   }
   .detail {

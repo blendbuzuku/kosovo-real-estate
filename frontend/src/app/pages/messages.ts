@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ElementRef, effect, inject, input, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, effect, inject, input, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
@@ -96,6 +96,20 @@ export class MessagesPage {
       this.messages();
       const el = this.scroller()?.nativeElement;
       if (el) setTimeout(() => (el.scrollTop = el.scrollHeight));
+    });
+    // Pick up replies while the page is open.
+    const timer = setInterval(() => this.poll(), 15_000);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
+
+  private poll() {
+    if (document.hidden) return;
+    const id = this.id();
+    this.api.conversations().subscribe((list) => {
+      const before = this.conversations().find((c) => c.id === id)?.lastMessageAt;
+      this.conversations.set(list);
+      const now = list.find((c) => c.id === id);
+      if (id && now && now.lastMessageAt !== before) this.loadMessages(id);
     });
   }
 

@@ -48,6 +48,9 @@ public class ListingFlowTests(ApiFactory factory) : IClassFixture<ApiFactory>
         Assert.Equal("Legalized", live.Attributes.GetProperty("legalization").GetString());
         Assert.Equal(1214.29m, live.PricePerM2); // 85,000 / 70 m²
         Assert.Contains(factory.Email.Sent, e => e.Subject.Contains("is live"));
+
+        // A live ad keeps at least one photo.
+        Assert.Equal(HttpStatusCode.BadRequest, (await owner.DeleteAsync($"/api/listings/{listing.Id}/photos/{photo.Id}")).StatusCode);
     }
 
     [Fact]
@@ -132,6 +135,23 @@ public class ListingFlowTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Expired_listing_can_be_edited_and_sent_back_for_review()
+    {
+        var (owner, _) = await factory.Register();
+        var listing = await TestData.CreateLiveListing(factory, owner);
+        await factory.WithDb(async db =>
+        {
+            var l = await db.Listings.FindAsync(listing.Id);
+            l!.Expire();
+            return await db.SaveChangesAsync();
+        });
+
+        (await owner.PutAsJsonAsync($"/api/listings/{listing.Id}", TestData.Apartment(price: 70_000), ApiFactory.Json)).EnsureSuccessStatusCode();
+        var submitted = await (await owner.PostAsync($"/api/listings/{listing.Id}/submit", null)).Read<ListingDetailDto>();
+        Assert.Equal(ListingStatus.PendingReview, submitted.Status);
+    }
+
+    [Fact]
     public async Task Seeker_can_favorite_message_owner_and_owner_replies()
     {
         var (owner, ownerUser) = await factory.Register(BusinessKind.RealEstateAgency, "Test Agency Prishtina");
@@ -186,6 +206,10 @@ public class ListingFlowTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var reports = await (await admin.GetAsync("/api/admin/reports")).Read<List<ReportDto>>();
         var report = Assert.Single(reports, r => r.ListingId == listing.Id);
 
+        // Owners can't report their own ads.
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await owner.PostAsJsonAsync($"/api/listings/{listing.Id}/reports", new ReportListingRequest(ReportReason.Spam, null), ApiFactory.Json)).StatusCode);
+
         (await admin.PostAsJsonAsync($"/api/admin/reports/{report.Id}/resolve", new ResolveReportRequest(true, null))).EnsureSuccessStatusCode();
 
         var anon = factory.CreateClient();
@@ -215,6 +239,11 @@ public class ListingFlowTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
         var unknownPlace = await owner.PostAsJsonAsync("/api/listings", TestData.Apartment(place: "Atlantis"), ApiFactory.Json);
         Assert.Contains("place", (await unknownPlace.Content.ReadFromJsonAsync<ValidationErrors>(ApiFactory.Json))!.Errors.Keys);
+
+        // Names typed without ë/ç or in another case are matched to the list and stored as listed.
+        var folded = await TestData.CreateListing(owner, TestData.Apartment(municipality: "peje", place: "karagac", lat: null, lng: null));
+        Assert.Equal("Pejë", folded.Municipality);
+        Assert.Equal("Karagaç", folded.Place);
 
         // No pin: the ad sits at the municipality centre. Strings from forms are normalised to numbers and booleans.
         var noPin = await TestData.CreateListing(owner, TestData.Apartment(municipality: "Pejë", place: "Karagaç", lat: null, lng: null) with

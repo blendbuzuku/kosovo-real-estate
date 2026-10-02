@@ -76,7 +76,7 @@ public static class Seeder
                  string municipality, string? place, object attributes, bool negotiable = false)
         {
             var m = Locations.Find(municipality)!;
-            if (place is not null && !Locations.HasPlace(m, place)) place = null;
+            if (place is not null) place = Locations.FindPlace(m, place)?.Name ?? throw new InvalidOperationException($"Seed place {place} is not in {municipality}.");
             var input = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(JsonSerializer.Serialize(attributes))!;
             var (json, errors) = AttributeValidator.Normalize(Categories.Find(category)!, deal, input);
             if (errors.Count > 0)

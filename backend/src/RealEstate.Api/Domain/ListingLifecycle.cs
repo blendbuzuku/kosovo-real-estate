@@ -32,7 +32,7 @@ public partial class Listing
 
     public void Submit(DateTimeOffset now)
     {
-        if (Status is not (ListingStatus.Draft or ListingStatus.Rejected))
+        if (Status is not (ListingStatus.Draft or ListingStatus.Rejected or ListingStatus.Expired))
             throw new DomainException($"A listing that is {Status} can't be submitted.");
         if (Photos.Count == 0)
             throw new DomainException("Add at least one photo before submitting.");

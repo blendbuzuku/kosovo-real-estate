@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api, errorMessage } from '../core/api.service';
 import { Catalog } from '../core/catalog';
@@ -116,6 +116,12 @@ export class BusinessesPage {
             <p class="card empty muted">No live ads right now.</p>
           }
         </div>
+        @if (listings().length < total()) {
+          <div class="load-more">
+            <button type="button" class="btn ghost" (click)="loadMore()">Show more ads</button>
+            <span class="muted small">Showing {{ listings().length }} of {{ total() }}</span>
+          </div>
+        }
       </div>
     }
   `,
@@ -129,23 +135,51 @@ export class BusinessPage {
   protected readonly listings = signal<ListingSummary[]>([]);
   protected readonly category = signal<string | null>(null);
   protected readonly error = signal<string | null>(null);
+  protected readonly total = signal(0);
+  /** Categories this business has ads in, learned from the unfiltered list so the pills don't vanish when one is picked. */
+  private readonly seen = signal<Set<string>>(new Set());
+  private page = 1;
 
-  protected readonly categories = computed(() => {
-    const keys = new Set(this.listings().map((l) => l.category));
-    return this.catalog.categories().filter((c) => keys.has(c.key));
-  });
-  protected readonly visible = computed(() =>
-    this.category() ? this.listings().filter((l) => l.category === this.category()) : this.listings(),
-  );
+  protected readonly categories = computed(() => this.catalog.categories().filter((c) => this.seen().has(c.key)));
+  protected readonly visible = this.listings;
 
   constructor() {
     effect(() => {
       const slug = this.slug();
+      this.error.set(null);
+      this.seen.set(new Set());
       this.api.business(slug).subscribe({
         next: (b) => this.business.set(b),
         error: (e) => this.error.set(e.status === 404 ? 'This business page doesn’t exist.' : errorMessage(e)),
       });
-      this.api.businessListings(slug).subscribe((r) => this.listings.set(r.items));
+    });
+    // A new business or a new category pill starts again from page 1; the server does the filtering.
+    effect(() => {
+      const slug = this.slug();
+      const category = this.category();
+      untracked(() => {
+        this.page = 1;
+        this.loadListings(slug, category);
+      });
+    });
+  }
+
+  protected loadMore() {
+    this.page++;
+    this.loadListings(this.slug(), this.category());
+  }
+
+  private loadListings(slug: string, category: string | null) {
+    const page = this.page;
+    this.api.businessListings(slug, category ? { category } : {}, page).subscribe({
+      next: (r) => {
+        if (category !== this.category()) return;
+        this.listings.set(page === 1 ? r.items : [...this.listings(), ...r.items]);
+        this.total.set(r.total);
+        if (!category) this.seen.set(new Set([...this.seen(), ...r.items.map((l) => l.category)]));
+      },
+      // A missing business is already reported by the profile request above.
+      error: () => this.listings.set([]),
     });
   }
 }

@@ -51,6 +51,12 @@ describe('formatting', () => {
     expect(formatField(floor, 0, true)).toBe('Ground floor');
   });
 
+  it('drops unknown sort, deal and seller values from the URL', () => {
+    const c = criteriaFromParams({ sort: 'Nope', dealType: 'Swap', seller: 'Robots', vertical: 'boats', category: 'cars' });
+    expect(c).toEqual({ category: 'cars' });
+    expect(criteriaFromParams({ sort: 'PriceAsc' }).sort).toBe('PriceAsc');
+  });
+
   it('folds Albanian letters for location search', () => {
     expect(fold('Fushë Kosovë')).toBe('fushe kosove');
     expect(fold('Çagllavicë')).toBe('cagllavice');

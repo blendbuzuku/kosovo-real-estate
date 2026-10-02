@@ -51,6 +51,9 @@ interface Group {
       @if (loadError()) {
         <p class="error">{{ loadError() }}</p>
       }
+      @if (status() === 'Active' && step() < 3) {
+        <p class="notice">This ad is live. Saving changes sends it back for a quick review before they show.</p>
+      }
 
       <div class="wizard-body card">
         @switch (step()) {
@@ -287,6 +290,11 @@ interface Group {
               </div>
             } @else {
               <h2>Check and publish</h2>
+              @if (status() === 'PendingReview') {
+                <p class="notice">Your changes are saved and the ad is waiting for review. We’ll email you when it’s live.</p>
+              } @else if (status() === 'Active') {
+                <p class="notice">This ad is live.</p>
+              }
               <div class="review">
                 <div class="review-card">
                   @if (preview(); as p) {
@@ -327,7 +335,7 @@ interface Group {
             </button>
           } @else if (canSubmit()) {
             <button type="button" class="btn" [disabled]="busy() || !ready()" (click)="submit()">
-              {{ status() === 'Active' ? 'Save changes' : 'Send for review' }}
+              Send for review
             </button>
           } @else {
             <a class="btn" [routerLink]="['/listings', id()]">View the ad</a>
@@ -498,17 +506,20 @@ export class PostWizardPage {
 
   protected canJump(i: number): boolean {
     if (i <= this.step()) return true;
-    if (i >= 3 && !this.savedId()) return false;
     for (let s = 0; s < i; s++) if (this.stepProblem(s)) return false;
     return true;
   }
 
   protected goTo(i: number) {
-    if (this.canJump(i)) {
+    if (!this.canJump(i)) return;
+    const show = () => {
       this.error.set(null);
       this.step.set(i);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    };
+    // Leaving the first three steps forwards saves them, so a jump from the step bar loses nothing.
+    if (i >= 3 && this.step() < 3) this.save(show);
+    else show();
   }
 
   protected back() {

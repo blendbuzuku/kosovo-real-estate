@@ -29,6 +29,7 @@ export interface LocationValue {
         [placeholder]="placeholder()"
         [value]="text()"
         (focus)="openList(); box.select()"
+        (click)="reopen()"
         (input)="onType($any($event.target).value)"
         (keydown)="onKey($event)"
       />
@@ -101,6 +102,13 @@ export class LocationInput {
     this.open.set(true);
   }
 
+  /** A click on the already-focused box (after Escape or a pick) opens the list again. */
+  protected reopen() {
+    if (this.open()) return;
+    this.openList();
+    this.box().nativeElement.select();
+  }
+
   protected onType(value: string) {
     this.text.set(value);
     this.query.set(value);
@@ -128,7 +136,7 @@ export class LocationInput {
 
   protected choose(h: LocationHit | null) {
     const value = { municipality: h?.municipality ?? null, place: h?.place ?? null };
-    this.text.set(h ? h.label : '');
+    this.showText(h ? h.label : '');
     this.open.set(false);
     this.changed.emit(value);
     this.box().nativeElement.blur();
@@ -143,6 +151,16 @@ export class LocationInput {
     // Typed text that wasn't picked is dropped, so the box always shows the real filter.
     const m = this.municipality();
     const p = this.place();
-    this.text.set(m ? (p ? `${p}, ${m}` : m) : '');
+    this.showText(m ? (p ? `${p}, ${m}` : m) : '');
+  }
+
+  /**
+   * Sets the box's text. Writes the input directly too: if the user typed and pressed Escape before
+   * the next render, the signal goes back to the value last rendered and Angular wouldn't touch the box.
+   */
+  private showText(value: string) {
+    this.text.set(value);
+    const el = this.box()?.nativeElement;
+    if (el && el.value !== value) el.value = value;
   }
 }

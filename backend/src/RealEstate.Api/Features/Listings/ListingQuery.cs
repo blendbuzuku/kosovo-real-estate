@@ -4,6 +4,7 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using RealEstate.Api.Data;
 using RealEstate.Api.Domain;
+using RealEstate.Api.Features.Meta;
 
 namespace RealEstate.Api.Features.Listings;
 
@@ -32,8 +33,18 @@ public static class ListingQuery
             q = q.Where(l => keys.Contains(l.Category));
         }
         if (c.DealType is { } deal) q = q.Where(l => l.DealType == deal);
-        if (!string.IsNullOrWhiteSpace(c.Municipality)) q = q.Where(l => l.Municipality == c.Municipality);
-        if (!string.IsNullOrWhiteSpace(c.Place)) q = q.Where(l => l.Place == c.Place);
+        if (!string.IsNullOrWhiteSpace(c.Municipality))
+        {
+            var municipality = Locations.Find(c.Municipality);
+            var name = municipality?.Name ?? c.Municipality;
+            q = q.Where(l => l.Municipality == name);
+            if (!string.IsNullOrWhiteSpace(c.Place))
+            {
+                var place = (municipality is null ? null : Locations.FindPlace(municipality, c.Place)?.Name) ?? c.Place;
+                q = q.Where(l => l.Place == place);
+            }
+        }
+        else if (!string.IsNullOrWhiteSpace(c.Place)) q = q.Where(l => l.Place == c.Place);
         if (!string.IsNullOrWhiteSpace(c.Q))
         {
             var pattern = $"%{EscapeLike(c.Q.Trim())}%";

@@ -78,6 +78,19 @@ cd frontend && npx ng test --watch=false
 
 The backend tests spin up the real API in memory against a throwaway database per test class and cover the full ad lifecycle (draft, photos, review, approval, edit re-review, expiry and renewal), validation of category fields and locations, search filters (category, deal, municipality, neighbourhood, price, field filters like rooms, fuel and mileage, radius and bounding box) and sorting, the legal-status filter, booking requests and their rules, business pages, messaging and its access rules, favorites, reporting and takedown, and saved-search email alerts.
 
+### End-to-end tests
+
+`e2e/` drives the running app the way people use it. Start the API and the web app on a fresh demo database first (see above), with the rate limits raised so the suite can log in many times:
+
+```bash
+RateLimits__AuthPer10Minutes=1000 RateLimits__PhonePerHour=1000 RateLimits__MessagesPerHour=1000 dotnet run   # in backend/src/RealEstate.Api
+cd e2e && npm install && npx playwright install chromium
+node api.mjs   # ~1,000 checks: every filter of every category against the data, sorting, paging, locations, permissions, lifecycle
+node ui.mjs    # ~1,600 checks in Chromium: every page and action as visitor, member, business and admin, desktop and phone
+```
+
+`ui.mjs` posts one ad of every category and deal type through the wizard, moderates them, messages, books, reports and saves searches, checks that every count shown matches the API, and fails on any console error or unexpected API error. Set `APP_URL`, `API_URL` or `CHROMIUM_PATH` to point it elsewhere; screenshots land in `e2e/screenshots/`.
+
 ## Configuration
 
 | Key | Purpose |

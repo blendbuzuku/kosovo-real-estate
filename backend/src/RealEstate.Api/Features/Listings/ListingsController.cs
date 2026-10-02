@@ -239,6 +239,8 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         var listing = await FindOwned(id, ct);
         var photo = listing?.Photos.FirstOrDefault(p => p.Id == photoId);
         if (photo is null) return NotFound();
+        if (listing!.Photos.Count == 1 && listing.Status is ListingStatus.Active or ListingStatus.PendingReview)
+            return Problem("Live ads need at least one photo. Add another before deleting this one.", statusCode: 400);
         db.ListingPhotos.Remove(photo);
         await db.SaveChangesAsync(ct);
         await storage.DeleteAsync(photo.LargeKey, ct);
@@ -282,8 +284,11 @@ public class ListingsController(AppDbContext db, IFileStorage storage, PhotoProc
         var municipality = Locations.Find(r.Municipality);
         var place = string.IsNullOrWhiteSpace(r.Place) ? null : r.Place.Trim();
         if (municipality is null) errors["municipality"] = [$"Unknown municipality '{r.Municipality}'."];
-        else if (place is not null && !Locations.HasPlace(municipality, place))
-            errors["place"] = [$"'{place}' isn't a neighbourhood or village of {municipality.Name}. Leave it empty and use the address instead."];
+        else if (place is not null)
+        {
+            if (Locations.FindPlace(municipality, place) is { } known) place = known.Name;
+            else errors["place"] = [$"'{place}' isn't a neighbourhood or village of {municipality.Name}. Leave it empty and use the address instead."];
+        }
         if (r.Lat is null != r.Lng is null) errors["lat"] = ["Give both latitude and longitude, or neither."];
 
         var attributes = "{}";

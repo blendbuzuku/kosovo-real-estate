@@ -169,14 +169,14 @@ export class HomePage {
     return d === 'RentMonthly' ? ' / month' : d === 'RentNightly' ? ' / night' : d === 'RentDaily' ? ' / day' : '';
   });
 
-  /** One tile per category, plus "Stays" since per-night rentals are their own world. */
+  /** One tile per category, plus "Stays" and "Rent a car" since those are their own worlds (they overlap the category tiles). */
   protected readonly tiles = computed(() => {
     const tiles: { label: string; icon: string; count: string | number; params: object }[] = [];
     for (const cat of this.catalog.categories()) {
       tiles.push({
         label: cat.name,
         icon: cat.icon,
-        count: formatNumber(this.catalog.liveCount(cat) - this.catalog.liveCount(cat, 'RentNightly')),
+        count: formatNumber(this.catalog.liveCount(cat)),
         params: { category: cat.key, vertical: cat.vertical },
       });
     }

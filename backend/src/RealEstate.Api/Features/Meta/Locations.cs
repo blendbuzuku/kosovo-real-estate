@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace RealEstate.Api.Features.Meta;
@@ -14,9 +16,30 @@ public static class Locations
 {
     public static readonly IReadOnlyList<Municipality> All = Load();
 
-    public static Municipality? Find(string? name) => All.FirstOrDefault(m => m.Name == name);
+    /// <summary>Finds a municipality by name, ignoring case and the ë/ç accents ("prishtine" finds Prishtinë).</summary>
+    public static Municipality? Find(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return null;
+        var key = Fold(name);
+        return All.FirstOrDefault(m => m.Name == name) ?? All.FirstOrDefault(m => Fold(m.Name) == key);
+    }
 
-    public static bool HasPlace(Municipality m, string? place) => m.Places.Any(p => p.Name == place);
+    /// <summary>Finds a neighbourhood or village of the municipality, with the same tolerance as <see cref="Find"/>.</summary>
+    public static Place? FindPlace(Municipality m, string? place)
+    {
+        if (string.IsNullOrWhiteSpace(place)) return null;
+        var key = Fold(place);
+        return m.Places.FirstOrDefault(p => p.Name == place) ?? m.Places.FirstOrDefault(p => Fold(p.Name) == key);
+    }
+
+    public static string Fold(string s)
+    {
+        var decomposed = s.Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(decomposed.Length);
+        foreach (var ch in decomposed)
+            if (CharUnicodeInfo.GetUnicodeCategory(ch) != UnicodeCategory.NonSpacingMark) sb.Append(ch);
+        return sb.ToString();
+    }
 
     private static IReadOnlyList<Municipality> Load()
     {

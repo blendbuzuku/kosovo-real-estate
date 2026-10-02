@@ -96,7 +96,8 @@ export class MapView implements OnDestroy {
 
   private moveTo(lat: number, lng: number, zoom?: number) {
     this.suppressMoveEvent = true;
-    this.map!.setView([lat, lng], zoom ?? this.map!.getZoom());
+    // No animation: an animated zoom still running when the map is destroyed (e.g. the wizard moves on) throws.
+    this.map!.setView([lat, lng], zoom ?? this.map!.getZoom(), { animate: false });
   }
 
   private drawPins(pins: MapPin[]) {
@@ -149,6 +150,7 @@ export class MapView implements OnDestroy {
   ngOnDestroy() {
     // Detach handlers first: a pending moveend would otherwise read a removed map.
     this.map?.off();
+    this.map?.stop();
     this.map?.remove();
     this.map = undefined;
   }
