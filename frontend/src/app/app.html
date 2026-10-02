@@ -1,0 +1,49 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a routerLink="/" class="brand" (click)="menuOpen.set(false)">
+      <span class="logo" aria-hidden="true">P</span> Prona
+    </a>
+    <button type="button" class="menu-toggle" [attr.aria-expanded]="menuOpen()" aria-label="Menu" (click)="menuOpen.set(!menuOpen())">
+      ☰
+    </button>
+    <nav class="nav" [class.open]="menuOpen()" (click)="menuOpen.set(false)">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Search</a>
+      <a routerLink="/agencies" routerLinkActive="active">Agencies</a>
+      @if (auth.user(); as user) {
+        <a routerLink="/favorites" routerLinkActive="active">Favorites</a>
+        <a routerLink="/saved-searches" routerLinkActive="active">Alerts</a>
+        <a routerLink="/messages" routerLinkActive="active">
+          Messages
+          @if (unread.count()) {
+            <span class="badge-count">{{ unread.count() }}</span>
+          }
+        </a>
+        @if (auth.canPost()) {
+          <a routerLink="/my-listings" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">My listings</a>
+        }
+        @if (auth.isAdmin()) {
+          <a routerLink="/admin" routerLinkActive="active">Moderation</a>
+        }
+        <a routerLink="/profile" routerLinkActive="active" class="user">{{ user.displayName }}</a>
+        <button type="button" class="link" (click)="logout()">Log out</button>
+        @if (auth.canPost()) {
+          <a routerLink="/my-listings/new" class="btn small">+ Post</a>
+        }
+      } @else {
+        <a routerLink="/login" routerLinkActive="active">Log in</a>
+        <a routerLink="/register" class="btn small">Post a property</a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main>
+  <router-outlet />
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span>© Prona · Real estate in Kosovo</span>
+    <span class="muted">Legal status is declared by the poster. Verify documents with a notary before you pay.</span>
+  </div>
+</footer>
